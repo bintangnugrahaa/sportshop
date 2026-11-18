@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>SportShop.Api</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SportShop.Application\SportShop.Application.csproj" />
+    <ProjectReference Include="..\SportShop.Infrastructure\SportShop.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
