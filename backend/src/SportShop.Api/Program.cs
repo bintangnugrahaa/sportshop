@@ -1,4 +1,5 @@
 using Serilog;
+using SportShop.Api.Middleware;
 using SportShop.Application;
 using SportShop.Infrastructure;
 using SportShop.Infrastructure.Observability;
@@ -18,6 +19,8 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSportShopRequestLogging();
 
 app.UseHttpsRedirection();
