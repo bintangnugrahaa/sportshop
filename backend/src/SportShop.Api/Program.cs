@@ -27,6 +27,7 @@ app.UseSportShopRequestLogging();
 app.UseSwaggerDocumentation();
 
 app.UseHttpsRedirection();
+app.MapSportShopHealthChecks();
 app.MapControllers();
 
 app.MapGet("/", () => Results.Ok(new { Name = "SportShop API", Status = "Healthy" }));
