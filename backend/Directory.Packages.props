@@ -21,7 +21,7 @@
     <PackageVersion Include="Riok.Mapperly" Version="4.1.1" />
 
     <!-- EF Core & PostgreSQL -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.23" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
