@@ -14,7 +14,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T0-02 | Solusi backend: 4 proyek src + 3 proyek test, referensi antar-layer sesuai arah dependensi, `Directory.Build.props` (nullable, warnaserror, analyzer), `Directory.Packages.props` (central package management) | T0-01 | M | `dotnet build` hijau; tes arsitektur sederhana memastikan Domain tak mereferensi layer lain |
 | [x] | T0-03 | Scaffold frontend: Vite + React + TS strict, Tailwind, shadcn/ui (`components.json`), ESLint, Prettier, Vitest, alias path `@/` | T0-01 | M | `npm run dev/lint/typecheck/test/build` hijau |
 | [x] | T0-04 | `docker-compose.yml`: db, redis, seq, mailpit, api, web + `.env.example` + Dockerfile backend & frontend | T0-02, T0-03 | M | `docker compose up` menjalankan semua service sehat |
-| [ ] | T0-05 | GitHub Actions CI backend & frontend, cache, laporan test; Dependabot | T0-02, T0-03 | M | PR percobaan menjalankan CI dan hijau |
+| [x] | T0-05 | GitHub Actions CI backend & frontend, cache, laporan test; Dependabot | T0-02, T0-03 | M | PR percobaan menjalankan CI dan hijau |
 
 ## Fase 1 — Infrastruktur Backend Lintas-Fungsi
 
