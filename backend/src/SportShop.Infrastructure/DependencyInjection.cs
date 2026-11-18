@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SportShop.Application.Common.Interfaces;
 using SportShop.Infrastructure.Caching;
+using SportShop.Infrastructure.Jobs;
 using SportShop.Infrastructure.Observability;
 using SportShop.Infrastructure.Options;
 using SportShop.Infrastructure.Persistence;
@@ -90,6 +91,7 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, RedisCacheService>();
 
         services.AddSportShopHealthChecks(configuration);
+        services.AddHangfireServices(configuration);
 
         return services;
     }

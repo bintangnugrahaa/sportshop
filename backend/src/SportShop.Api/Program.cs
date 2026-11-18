@@ -3,6 +3,7 @@ using SportShop.Api.Extensions;
 using SportShop.Api.Middleware;
 using SportShop.Application;
 using SportShop.Infrastructure;
+using SportShop.Infrastructure.Jobs;
 using SportShop.Infrastructure.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,7 @@ app.UseSwaggerDocumentation();
 
 app.UseHttpsRedirection();
 app.MapSportShopHealthChecks();
+app.UseSportShopHangfireDashboard();
 app.MapControllers();
 
 app.MapGet("/", () => Results.Ok(new { Name = "SportShop API", Status = "Healthy" }));

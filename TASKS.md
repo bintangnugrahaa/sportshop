@@ -28,7 +28,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T1-06 | `AppDbContext`, konvensi snake_case, `IClock`, UnitOfWork, koneksi PostgreSQL, migrasi awal kosong | T1-01 | M | `database update` sukses di Postgres Docker |
 | [x] | T1-07 | Redis `ICacheService` (cache-aside, fallback aman saat Redis mati) | T1-01 | S | Test: Redis down tidak membuat request gagal |
 | [x] | T1-08 | HealthChecks `/health/live` & `/health/ready` (Npgsql, Redis, Hangfire) | T1-06, T1-07 | S | Ready = 503 bila DB mati |
-| [ ] | T1-09 | Hangfire (storage PostgreSQL), dashboard Admin-only | T1-06 | S | Job contoh berjalan |
+| [x] | T1-09 | Hangfire (storage PostgreSQL), dashboard Admin-only | T1-06 | S | Job contoh berjalan |
 | [ ] | T1-10 | Rate limiting, CORS, security headers | T1-01 | S | Uji: >10 login/menit → 429 |
 | [ ] | T1-11 | Fondasi test: `WebApplicationFactory` + Testcontainers (Postgres, Redis), `CustomWebApplicationFactory`, helper auth test | T1-06 | M | Satu test integrasi `/health/ready` lulus di CI |
 

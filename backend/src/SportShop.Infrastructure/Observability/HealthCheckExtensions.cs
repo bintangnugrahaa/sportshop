@@ -32,6 +32,15 @@ public static class HealthCheckExtensions
                 sp => sp.GetRequiredService<StackExchange.Redis.IConnectionMultiplexer>(),
                 name: "redis",
                 failureStatus: HealthStatus.Degraded,
+                tags: ["ready"])
+            .AddHangfire(
+                options =>
+                {
+                    options.MinimumAvailableServers = 1;
+                    options.MaximumJobsFailed = 10;
+                },
+                name: "hangfire",
+                failureStatus: HealthStatus.Degraded,
                 tags: ["ready"]);
 
         return services;
