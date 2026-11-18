@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SportShop.Application\SportShop.Application.csproj" />
     <ProjectReference Include="..\SportShop.Infrastructure\SportShop.Infrastructure.csproj" />
   </ItemGroup>
