@@ -20,7 +20,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 
 | ✓ | ID | Tugas | Dep | Ukuran | Kriteria penerimaan |
 |---|---|---|---|---|---|
-| [ ] | T1-01 | `Program.cs` + modul DI; konfigurasi `IOptions` dengan `ValidateOnStart` | T0-02 | S | Aplikasi gagal start jika konfigurasi wajib kosong |
+| [x] | T1-01 | `Program.cs` + modul DI; konfigurasi `IOptions` dengan `ValidateOnStart` | T0-02 | S | Aplikasi gagal start jika konfigurasi wajib kosong |
 | [ ] | T1-02 | Serilog (console + Seq), enrichment, request logging | T1-01 | S | Log muncul di Seq dengan `TraceId` |
 | [ ] | T1-03 | OpenTelemetry trace + metrik, export OTLP ke Seq | T1-02 | M | Trace request→EF Core terlihat di Seq |
 | [ ] | T1-04 | Middleware ProblemDetails (RFC 7807), `Result<T>`/`Error` → HTTP mapping, CorrelationId | T1-01 | M | Semua jenis error menghasilkan format di `DESIGN.md` B1 |
