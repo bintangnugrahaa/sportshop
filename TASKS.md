@@ -30,7 +30,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T1-08 | HealthChecks `/health/live` & `/health/ready` (Npgsql, Redis, Hangfire) | T1-06, T1-07 | S | Ready = 503 bila DB mati |
 | [x] | T1-09 | Hangfire (storage PostgreSQL), dashboard Admin-only | T1-06 | S | Job contoh berjalan |
 | [x] | T1-10 | Rate limiting, CORS, security headers | T1-01 | S | Uji: >10 login/menit → 429 |
-| [ ] | T1-11 | Fondasi test: `WebApplicationFactory` + Testcontainers (Postgres, Redis), `CustomWebApplicationFactory`, helper auth test | T1-06 | M | Satu test integrasi `/health/ready` lulus di CI |
+| [x] | T1-11 | Fondasi test: `WebApplicationFactory` + Testcontainers (Postgres, Redis), `CustomWebApplicationFactory`, helper auth test | T1-06 | M | Satu test integrasi `/health/ready` lulus di CI |
 
 ## Fase 2 — Identity & Autentikasi
 

@@ -63,12 +63,10 @@ public static class DependencyInjection
 
         services.AddOpenTelemetryObservability(configuration);
 
-        var connectionString = configuration.GetConnectionString("Default")
-            ?? configuration["ConnectionStrings:Default"];
-
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContext<AppDbContext>((sp, options) =>
         {
-            options.UseNpgsql(connectionString, npgsqlOptions =>
+            var dbOptions = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<DatabaseOptions>>().Value;
+            options.UseNpgsql(dbOptions.Default, npgsqlOptions =>
             {
                 npgsqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
                 npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
@@ -80,10 +78,10 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        var redisConnectionString = configuration["Redis:ConnectionString"] ?? "localhost:6379";
-        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
-            var config = ConfigurationOptions.Parse(redisConnectionString);
+            var redisOptions = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<RedisOptions>>().Value;
+            var config = ConfigurationOptions.Parse(redisOptions.ConnectionString);
             config.AbortOnConnectFail = false;
             config.ConnectTimeout = 2000;
             return ConnectionMultiplexer.Connect(config);
