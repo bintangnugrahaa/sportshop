@@ -1,0 +1,5 @@
+# Local development docker-compose overrides
+services:
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development

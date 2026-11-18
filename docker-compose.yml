@@ -1,0 +1,101 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: sportshop-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sportshop}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sportshop"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: sportshop-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  seq:
+    image: datalust/seq:latest
+    container_name: sportshop-seq
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
+    ports:
+      - "5341:80"
+      - "5342:5341"
+    volumes:
+      - seqdata:/data
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: sportshop-mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sportshop-api
+    ports:
+      - "5080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: ${ConnectionStrings__Default:-Host=db;Port=5432;Database=sportshop;Username=postgres;Password=postgres}
+      Redis__ConnectionString: ${Redis__ConnectionString:-redis:6379}
+      Jwt__Key: ${Jwt__Key:-super-secret-key-that-is-at-least-32-characters-long!}
+      Jwt__Issuer: ${Jwt__Issuer:-SportShopApi}
+      Jwt__Audience: ${Jwt__Audience:-SportShopClient}
+      Seq__ServerUrl: http://seq:5341
+      Otel__OtlpEndpoint: http://seq:5341/ingest/otlp
+      Smtp__Host: mailpit
+      Smtp__Port: 1025
+      Cors__Origins: http://localhost:5173,http://localhost:5080
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sportshop-web
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  seqdata:
