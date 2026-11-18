@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SportShop.Application.Common.Interfaces;
+using SportShop.Infrastructure.Caching;
 using SportShop.Infrastructure.Observability;
 using SportShop.Infrastructure.Options;
 using SportShop.Infrastructure.Persistence;
 using SportShop.Infrastructure.Services;
+using StackExchange.Redis;
 
 namespace SportShop.Infrastructure;
 
@@ -76,6 +78,16 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        var redisConnectionString = configuration["Redis:ConnectionString"] ?? "localhost:6379";
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            var config = ConfigurationOptions.Parse(redisConnectionString);
+            config.AbortOnConnectFail = false;
+            config.ConnectTimeout = 2000;
+            return ConnectionMultiplexer.Connect(config);
+        });
+        services.AddSingleton<ICacheService, RedisCacheService>();
 
         return services;
     }

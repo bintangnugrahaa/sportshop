@@ -26,7 +26,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T1-04 | Middleware ProblemDetails (RFC 7807), `Result<T>`/`Error` → HTTP mapping, CorrelationId | T1-01 | M | Semua jenis error menghasilkan format di `DESIGN.md` B1 |
 | [x] | T1-05 | Swagger/OpenAPI + skema Bearer + versi `v1` | T1-01 | S | `/swagger` tampil, tombol Authorize berfungsi |
 | [x] | T1-06 | `AppDbContext`, konvensi snake_case, `IClock`, UnitOfWork, koneksi PostgreSQL, migrasi awal kosong | T1-01 | M | `database update` sukses di Postgres Docker |
-| [ ] | T1-07 | Redis `ICacheService` (cache-aside, fallback aman saat Redis mati) | T1-01 | S | Test: Redis down tidak membuat request gagal |
+| [x] | T1-07 | Redis `ICacheService` (cache-aside, fallback aman saat Redis mati) | T1-01 | S | Test: Redis down tidak membuat request gagal |
 | [ ] | T1-08 | HealthChecks `/health/live` & `/health/ready` (Npgsql, Redis, Hangfire) | T1-06, T1-07 | S | Ready = 503 bila DB mati |
 | [ ] | T1-09 | Hangfire (storage PostgreSQL), dashboard Admin-only | T1-06 | S | Job contoh berjalan |
 | [ ] | T1-10 | Rate limiting, CORS, security headers | T1-01 | S | Uji: >10 login/menit → 429 |
