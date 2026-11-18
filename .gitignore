@@ -1,0 +1,50 @@
+# Dotnet / C#
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+TestResults/
+*.trx
+*.DotSettings.user
+appsettings.Development.json
+appsettings.Local.json
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+.vite/
+coverage/
+
+# Environment and Secrets
+.env
+.env.*
+!.env.example
+
+# Database & Containers
+pgdata/
+seqdata/
+redisdata/
+
+# Uploads / Static user content
+uploads/
+backend/src/SportShop.Api/wwwroot/uploads/*
+!backend/src/SportShop.Api/wwwroot/uploads/.gitkeep
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
