@@ -1,4 +1,5 @@
 using Serilog;
+using SportShop.Api.Extensions;
 using SportShop.Api.Middleware;
 using SportShop.Application;
 using SportShop.Infrastructure;
@@ -15,13 +16,15 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSportShopRequestLogging();
+
+app.UseSwaggerDocumentation();
 
 app.UseHttpsRedirection();
 app.MapControllers();
