@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SportShop.Infrastructure.Observability;
 using SportShop.Infrastructure.Options;
 
 namespace SportShop.Infrastructure;
@@ -52,6 +53,8 @@ public static class DependencyInjection
             .BindConfiguration(OrderOptions.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddOpenTelemetryObservability(configuration);
 
         return services;
     }
