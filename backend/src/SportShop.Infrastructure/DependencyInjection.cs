@@ -95,6 +95,9 @@ public static class DependencyInjection
         .AddDefaultTokenProviders();
 
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IClock, SystemClock>();

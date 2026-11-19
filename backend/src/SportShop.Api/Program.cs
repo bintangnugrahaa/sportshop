@@ -21,6 +21,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddSportShopCors(builder.Configuration);
 builder.Services.AddSportShopRateLimiting();
+builder.Services.AddSportShopAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerDocumentation();
@@ -35,6 +36,9 @@ app.UseSportShopRequestLogging();
 app.UseCors(CorsExtensions.PolicyName);
 app.UseRateLimiter();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseSwaggerDocumentation();
 
 app.UseHttpsRedirection();
@@ -47,6 +51,10 @@ app.MapGet("/", () => Results.Ok(new { Name = "SportShop API", Status = "Healthy
 // Rate-limited endpoint mappings for verification and auth/checkout policies
 var authGroup = app.MapGroup("/api/v1/auth").RequireRateLimiting(RateLimitingExtensions.AuthPolicy);
 authGroup.MapPost("/test-login", () => Results.Ok(new { Message = "Login ok" }));
+authGroup.MapGet("/test-protected", () => Results.Ok(new { Message = "Authenticated ok" })).RequireAuthorization();
+
+var adminGroup = app.MapGroup("/api/v1/admin").RequireAuthorization(AuthExtensions.AdminPolicy);
+adminGroup.MapGet("/test-admin", () => Results.Ok(new { Message = "Admin ok" }));
 
 var checkoutGroup = app.MapGroup("/api/v1/checkout").RequireRateLimiting(RateLimitingExtensions.CheckoutPolicy);
 checkoutGroup.MapPost("/test-checkout", () => Results.Ok(new { Message = "Checkout ok" }));
