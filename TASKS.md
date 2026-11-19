@@ -48,7 +48,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 
 | ✓ | ID | Tugas | Dep | Ukuran | Kriteria penerimaan |
 |---|---|---|---|---|---|
-| [ ] | T3-01 | Entity Domain katalog + konfigurasi EF + migrasi (categories, brands, products, variants, images, inventory_movements) | T1-06 | L | Constraint & index sesuai `DATABASE.md` |
+| [x] | T3-01 | Entity Domain katalog + konfigurasi EF + migrasi (categories, brands, products, variants, images, inventory_movements) | T1-06 | L | Constraint & index sesuai `DATABASE.md` |
 | [ ] | T3-02 | Admin CRUD kategori & brand (validasi slug unik, kedalaman 2 tingkat) | T3-01, T2-02 | M | Test integrasi CRUD + otorisasi |
 | [ ] | T3-03 | Admin CRUD produk & varian (SKU unik, soft delete) | T3-01, T2-02 | L | Test validasi, aturan harga/berat/stok |
 | [ ] | T3-04 | Upload gambar produk (`IFileStorage` lokal, validasi MIME/ukuran, GUID) | T3-03 | M | File >2 MB atau tipe salah ditolak |

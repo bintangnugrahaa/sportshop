@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SportShop.Domain.Catalog;
+using SportShop.Domain.Inventory;
 using SportShop.Infrastructure.Identity;
 
 namespace SportShop.Infrastructure.Persistence;
@@ -13,10 +15,19 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     }
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+    public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.HasPostgresExtension("pg_trgm");
+        builder.HasPostgresExtension("unaccent");
 
         builder.Entity<ApplicationUser>(b => b.ToTable("users"));
         builder.Entity<ApplicationRole>(b => b.ToTable("roles"));
