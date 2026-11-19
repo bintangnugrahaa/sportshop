@@ -716,7 +716,7 @@ namespace SportShop.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
-                    b.Property<uint>("Version")
+                    b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("xid")

@@ -109,6 +109,9 @@ public static class DependencyInjection
 
         // Orders
         services.AddScoped<Features.Orders.Checkout.CheckoutOrderCommandHandler>();
+        services.AddScoped<Features.Orders.ListCustomerOrders.ListCustomerOrdersQueryHandler>();
+        services.AddScoped<Features.Orders.GetCustomerOrder.GetCustomerOrderByNumberQueryHandler>();
+        services.AddScoped<Features.Orders.CancelOrder.CancelCustomerOrderCommandHandler>();
 
         return services;
     }

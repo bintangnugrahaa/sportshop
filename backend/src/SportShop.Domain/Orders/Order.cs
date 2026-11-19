@@ -29,7 +29,6 @@ public class Order : IEntity
 
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    public uint Version { get; set; }
 
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     public ICollection<OrderStatusHistory> StatusHistories { get; set; } = new List<OrderStatusHistory>();
@@ -124,7 +123,7 @@ public class Order : IEntity
         UpdatedAt = now;
 
         StatusHistories.Add(new OrderStatusHistory(
-            Guid.NewGuid(),
+            Guid.Empty,
             Id,
             fromStatus: OrderStatus.PendingPayment,
             toStatus: OrderStatus.Paid,
@@ -144,7 +143,7 @@ public class Order : IEntity
         UpdatedAt = now;
 
         StatusHistories.Add(new OrderStatusHistory(
-            Guid.NewGuid(),
+            Guid.Empty,
             Id,
             fromStatus: OrderStatus.Paid,
             toStatus: OrderStatus.Processing,
@@ -177,7 +176,7 @@ public class Order : IEntity
         UpdatedAt = now;
 
         StatusHistories.Add(new OrderStatusHistory(
-            Guid.NewGuid(),
+            Guid.Empty,
             Id,
             fromStatus: OrderStatus.Processing,
             toStatus: OrderStatus.Shipped,
@@ -198,7 +197,7 @@ public class Order : IEntity
         UpdatedAt = now;
 
         StatusHistories.Add(new OrderStatusHistory(
-            Guid.NewGuid(),
+            Guid.Empty,
             Id,
             fromStatus: OrderStatus.Shipped,
             toStatus: OrderStatus.Completed,
@@ -221,7 +220,7 @@ public class Order : IEntity
         UpdatedAt = now;
 
         StatusHistories.Add(new OrderStatusHistory(
-            Guid.NewGuid(),
+            Guid.Empty,
             Id,
             fromStatus: previousStatus,
             toStatus: OrderStatus.Cancelled,
@@ -241,7 +240,7 @@ public class Order : IEntity
         UpdatedAt = now;
 
         StatusHistories.Add(new OrderStatusHistory(
-            Guid.NewGuid(),
+            Guid.Empty,
             Id,
             fromStatus: OrderStatus.PendingPayment,
             toStatus: OrderStatus.Expired,

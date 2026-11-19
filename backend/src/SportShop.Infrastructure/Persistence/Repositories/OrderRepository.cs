@@ -141,7 +141,11 @@ public sealed class OrderRepository : IOrderRepository
 
     public Task UpdateAsync(Order order, CancellationToken cancellationToken = default)
     {
-        _context.Orders.Update(order);
+        if (_context.Entry(order).State == EntityState.Detached)
+        {
+            _context.Orders.Update(order);
+        }
+
         return Task.CompletedTask;
     }
 }

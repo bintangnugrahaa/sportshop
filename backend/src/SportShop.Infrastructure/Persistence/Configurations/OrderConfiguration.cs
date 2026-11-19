@@ -122,8 +122,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.UpdatedAt)
             .HasColumnType("timestamptz");
 
-        builder.Property(o => o.Version)
-            .HasColumnName("xmin")
+        builder.Property<uint>("xmin")
             .HasColumnType("xid")
             .IsRowVersion();
 
