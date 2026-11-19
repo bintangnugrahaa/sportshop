@@ -92,6 +92,12 @@ public static class DependencyInjection
         services.AddScoped<Features.Cart.RemoveItem.RemoveCartItemCommandHandler>();
         services.AddScoped<Features.Cart.Clear.ClearCartCommandHandler>();
 
+        // Shipping
+        services.AddScoped<Features.Shipping.ListRates.ListShippingRatesQueryHandler>();
+        services.AddScoped<Features.Shipping.GetRate.GetShippingRateQueryHandler>();
+        services.AddScoped<Features.Shipping.GetActiveRates.GetActiveShippingRatesQueryHandler>();
+        services.AddScoped<Features.Shipping.UpdateRate.UpdateShippingRateCommandHandler>();
+
         return services;
     }
 }
