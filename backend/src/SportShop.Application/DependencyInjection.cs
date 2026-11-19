@@ -17,6 +17,14 @@ using SportShop.Application.Features.Catalog.Categories.DeleteCategory;
 using SportShop.Application.Features.Catalog.Categories.GetCategory;
 using SportShop.Application.Features.Catalog.Categories.ListCategories;
 using SportShop.Application.Features.Catalog.Categories.UpdateCategory;
+using SportShop.Application.Features.Catalog.Products.CreateProduct;
+using SportShop.Application.Features.Catalog.Products.DeleteProduct;
+using SportShop.Application.Features.Catalog.Products.GetProduct;
+using SportShop.Application.Features.Catalog.Products.ListProducts;
+using SportShop.Application.Features.Catalog.Products.UpdateProduct;
+using SportShop.Application.Features.Catalog.Variants.CreateVariant;
+using SportShop.Application.Features.Catalog.Variants.DeleteVariant;
+using SportShop.Application.Features.Catalog.Variants.UpdateVariant;
 using SportShop.Application.Features.Users.ChangePassword;
 using SportShop.Application.Features.Users.GetProfile;
 using SportShop.Application.Features.Users.UpdateProfile;
@@ -52,6 +60,18 @@ public static class DependencyInjection
         services.AddScoped<GetBrandByIdQueryHandler>();
         services.AddScoped<ListBrandsQueryHandler>();
         services.AddScoped<DeleteBrandCommandHandler>();
+
+        // Products
+        services.AddScoped<CreateProductCommandHandler>();
+        services.AddScoped<UpdateProductCommandHandler>();
+        services.AddScoped<GetProductByIdQueryHandler>();
+        services.AddScoped<ListAdminProductsQueryHandler>();
+        services.AddScoped<DeleteProductCommandHandler>();
+
+        // Variants
+        services.AddScoped<CreateVariantCommandHandler>();
+        services.AddScoped<UpdateVariantCommandHandler>();
+        services.AddScoped<DeleteVariantCommandHandler>();
 
         return services;
     }

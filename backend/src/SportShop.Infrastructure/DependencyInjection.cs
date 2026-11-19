@@ -107,6 +107,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ICategoryRepository, Persistence.Repositories.CategoryRepository>();
         services.AddScoped<IBrandRepository, Persistence.Repositories.BrandRepository>();
+        services.AddScoped<IProductRepository, Persistence.Repositories.ProductRepository>();
 
         services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
