@@ -161,4 +161,64 @@ public sealed class CartApplicationTests
         result.IsSuccess.Should().BeTrue();
         _uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public void ToDto_ShouldMarkPriceChanged_WhenVariantPriceChanges()
+    {
+        var cart = new Cart(Guid.NewGuid(), Guid.NewGuid());
+        var variant = CreateTestVariant(stock: 10, price: 100_000m);
+        var item = cart.AddItem(variant, 2, DateTime.UtcNow);
+
+        // Price changed from 100,000 to 125,000
+        variant.Price = 125_000m;
+
+        var dto = SportShop.Application.Mapping.CartMappingExtensions.ToDto(cart);
+
+        dto.HasIssues.Should().BeTrue();
+        var itemDto = dto.Items[0];
+        itemDto.IsPriceChanged.Should().BeTrue();
+        itemDto.PriceAtAdd.Should().Be(100_000m);
+        itemDto.UnitPrice.Should().Be(125_000m);
+        itemDto.StatusNote.Should().Contain("Harga berubah");
+        itemDto.IsAvailable.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ToDto_ShouldMarkStockInsufficient_WhenVariantStockDecreasesBelowCartQuantity()
+    {
+        var cart = new Cart(Guid.NewGuid(), Guid.NewGuid());
+        var variant = CreateTestVariant(stock: 10, price: 100_000m);
+        cart.AddItem(variant, 5, DateTime.UtcNow);
+
+        // Stock decreased to 2 (e.g. bought by other users)
+        variant.StockQuantity = 2;
+
+        var dto = SportShop.Application.Mapping.CartMappingExtensions.ToDto(cart);
+
+        dto.HasIssues.Should().BeTrue();
+        var itemDto = dto.Items[0];
+        itemDto.IsStockInsufficient.Should().BeTrue();
+        itemDto.IsAvailable.Should().BeFalse();
+        itemDto.StatusNote.Should().Contain("Stok tidak mencukupi");
+        dto.Subtotal.Should().Be(0); // Excluded from subtotal
+    }
+
+    [Fact]
+    public void ToDto_ShouldMarkInactive_WhenVariantOrProductDeactivated()
+    {
+        var cart = new Cart(Guid.NewGuid(), Guid.NewGuid());
+        var variant = CreateTestVariant(stock: 10, price: 100_000m);
+        cart.AddItem(variant, 2, DateTime.UtcNow);
+
+        variant.IsActive = false;
+
+        var dto = SportShop.Application.Mapping.CartMappingExtensions.ToDto(cart);
+
+        dto.HasIssues.Should().BeTrue();
+        var itemDto = dto.Items[0];
+        itemDto.IsActive.Should().BeFalse();
+        itemDto.IsAvailable.Should().BeFalse();
+        itemDto.StatusNote.Should().Contain("tidak aktif");
+        dto.Subtotal.Should().Be(0);
+    }
 }

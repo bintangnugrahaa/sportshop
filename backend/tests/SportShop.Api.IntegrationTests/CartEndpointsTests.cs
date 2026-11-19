@@ -186,4 +186,40 @@ public class CartEndpointsTests : IClassFixture<CustomWebApplicationFactory>
         var cartB = await getBResp.Content.ReadFromJsonAsync<CartDto>();
         cartB!.Items.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Cart_ShouldFlagItemIssues_WhenPriceOrStockChangesOrVariantIsDeactivated()
+    {
+        var client = await CreateAuthenticatedClientAsync();
+        var (_, variantId) = await SeedProductAndVariantAsync(stockQuantity: 10, price: 100_000m);
+
+        // Add 4 items
+        var addResp = await client.PostAsJsonAsync("/api/v1/cart/items", new CartController.AddCartItemRequest(variantId, 4));
+        addResp.EnsureSuccessStatusCode();
+
+        // Mutate variant directly in DB: price increases to 125,000, stock decreases to 2
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var variant = await db.ProductVariants.FindAsync(variantId);
+            variant!.Price = 125_000m;
+            variant.StockQuantity = 2;
+            await db.SaveChangesAsync();
+        }
+
+        // GET cart
+        var getResp = await client.GetAsync("/api/v1/cart");
+        getResp.EnsureSuccessStatusCode();
+        var cart = await getResp.Content.ReadFromJsonAsync<CartDto>();
+
+        cart.Should().NotBeNull();
+        cart!.HasIssues.Should().BeTrue();
+        var item = cart.Items[0];
+        item.IsPriceChanged.Should().BeTrue();
+        item.PriceAtAdd.Should().Be(100_000m);
+        item.UnitPrice.Should().Be(125_000m);
+        item.IsStockInsufficient.Should().BeTrue();
+        item.IsAvailable.Should().BeFalse();
+        item.StatusNote.Should().NotBeNullOrEmpty();
+    }
 }
