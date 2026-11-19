@@ -158,7 +158,6 @@ namespace SportShop.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SportShop.Domain.Carts.Cart", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -187,7 +186,6 @@ namespace SportShop.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SportShop.Domain.Carts.CartItem", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -622,6 +620,442 @@ namespace SportShop.Infrastructure.Persistence.Migrations
                     b.ToTable("inventory_movements", null, t =>
                         {
                             t.HasCheckConstraint("ck_inventory_movements_reason", "reason IN ('Initial', 'Sale', 'Cancel', 'Expire', 'ManualAdjust')");
+                        });
+                });
+
+            modelBuilder.Entity("SportShop.Domain.Shipping.ShippingRate", b =>
+                {
+                    b.Property<string>("ProvinceCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("province_code");
+
+                    b.Property<decimal>("BaseFee")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("base_fee");
+
+                    b.Property<short>("EstimatedDaysMax")
+                        .HasColumnType("smallint")
+                        .HasColumnName("estimated_days_max");
+
+                    b.Property<short>("EstimatedDaysMin")
+                        .HasColumnType("smallint")
+                        .HasColumnName("estimated_days_min");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<decimal>("PerKgFee")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("per_kg_fee");
+
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("province_name");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("ProvinceCode")
+                        .HasName("pk_shipping_rates");
+
+                    b.ToTable("shipping_rates", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_shipping_rates_base_fee", "base_fee >= 0");
+
+                            t.HasCheckConstraint("ck_shipping_rates_estimated_days_max", "estimated_days_max >= estimated_days_min");
+
+                            t.HasCheckConstraint("ck_shipping_rates_estimated_days_min", "estimated_days_min >= 0");
+
+                            t.HasCheckConstraint("ck_shipping_rates_per_kg_fee", "per_kg_fee >= 0");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            ProvinceCode = "JK",
+                            BaseFee = 10000m,
+                            EstimatedDaysMax = (short)2,
+                            EstimatedDaysMin = (short)1,
+                            IsActive = true,
+                            PerKgFee = 5000m,
+                            ProvinceName = "DKI Jakarta"
+                        },
+                        new
+                        {
+                            ProvinceCode = "JB",
+                            BaseFee = 11000m,
+                            EstimatedDaysMax = (short)3,
+                            EstimatedDaysMin = (short)1,
+                            IsActive = true,
+                            PerKgFee = 6000m,
+                            ProvinceName = "Jawa Barat"
+                        },
+                        new
+                        {
+                            ProvinceCode = "BT",
+                            BaseFee = 11000m,
+                            EstimatedDaysMax = (short)3,
+                            EstimatedDaysMin = (short)1,
+                            IsActive = true,
+                            PerKgFee = 6000m,
+                            ProvinceName = "Banten"
+                        },
+                        new
+                        {
+                            ProvinceCode = "JT",
+                            BaseFee = 15000m,
+                            EstimatedDaysMax = (short)4,
+                            EstimatedDaysMin = (short)2,
+                            IsActive = true,
+                            PerKgFee = 8000m,
+                            ProvinceName = "Jawa Tengah"
+                        },
+                        new
+                        {
+                            ProvinceCode = "YO",
+                            BaseFee = 15000m,
+                            EstimatedDaysMax = (short)4,
+                            EstimatedDaysMin = (short)2,
+                            IsActive = true,
+                            PerKgFee = 8000m,
+                            ProvinceName = "DI Yogyakarta"
+                        },
+                        new
+                        {
+                            ProvinceCode = "JI",
+                            BaseFee = 16000m,
+                            EstimatedDaysMax = (short)4,
+                            EstimatedDaysMin = (short)2,
+                            IsActive = true,
+                            PerKgFee = 9000m,
+                            ProvinceName = "Jawa Timur"
+                        },
+                        new
+                        {
+                            ProvinceCode = "BA",
+                            BaseFee = 20000m,
+                            EstimatedDaysMax = (short)5,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 12000m,
+                            ProvinceName = "Bali"
+                        },
+                        new
+                        {
+                            ProvinceCode = "NB",
+                            BaseFee = 25000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 15000m,
+                            ProvinceName = "Nusa Tenggara Barat"
+                        },
+                        new
+                        {
+                            ProvinceCode = "NT",
+                            BaseFee = 30000m,
+                            EstimatedDaysMax = (short)7,
+                            EstimatedDaysMin = (short)4,
+                            IsActive = true,
+                            PerKgFee = 18000m,
+                            ProvinceName = "Nusa Tenggara Timur"
+                        },
+                        new
+                        {
+                            ProvinceCode = "AC",
+                            BaseFee = 28000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 17000m,
+                            ProvinceName = "Aceh"
+                        },
+                        new
+                        {
+                            ProvinceCode = "SU",
+                            BaseFee = 25000m,
+                            EstimatedDaysMax = (short)5,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 15000m,
+                            ProvinceName = "Sumatera Utara"
+                        },
+                        new
+                        {
+                            ProvinceCode = "SB",
+                            BaseFee = 25000m,
+                            EstimatedDaysMax = (short)5,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 15000m,
+                            ProvinceName = "Sumatera Barat"
+                        },
+                        new
+                        {
+                            ProvinceCode = "RI",
+                            BaseFee = 24000m,
+                            EstimatedDaysMax = (short)5,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 14000m,
+                            ProvinceName = "Riau"
+                        },
+                        new
+                        {
+                            ProvinceCode = "KR",
+                            BaseFee = 26000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 16000m,
+                            ProvinceName = "Kepulauan Riau"
+                        },
+                        new
+                        {
+                            ProvinceCode = "JA",
+                            BaseFee = 23000m,
+                            EstimatedDaysMax = (short)5,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 14000m,
+                            ProvinceName = "Jambi"
+                        },
+                        new
+                        {
+                            ProvinceCode = "SS",
+                            BaseFee = 22000m,
+                            EstimatedDaysMax = (short)4,
+                            EstimatedDaysMin = (short)2,
+                            IsActive = true,
+                            PerKgFee = 13000m,
+                            ProvinceName = "Sumatera Selatan"
+                        },
+                        new
+                        {
+                            ProvinceCode = "BB",
+                            BaseFee = 24000m,
+                            EstimatedDaysMax = (short)5,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 15000m,
+                            ProvinceName = "Kepulauan Bangka Belitung"
+                        },
+                        new
+                        {
+                            ProvinceCode = "BE",
+                            BaseFee = 24000m,
+                            EstimatedDaysMax = (short)5,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 14000m,
+                            ProvinceName = "Bengkulu"
+                        },
+                        new
+                        {
+                            ProvinceCode = "LA",
+                            BaseFee = 18000m,
+                            EstimatedDaysMax = (short)4,
+                            EstimatedDaysMin = (short)2,
+                            IsActive = true,
+                            PerKgFee = 10000m,
+                            ProvinceName = "Lampung"
+                        },
+                        new
+                        {
+                            ProvinceCode = "KB",
+                            BaseFee = 26000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 16000m,
+                            ProvinceName = "Kalimantan Barat"
+                        },
+                        new
+                        {
+                            ProvinceCode = "KT",
+                            BaseFee = 28000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 17000m,
+                            ProvinceName = "Kalimantan Tengah"
+                        },
+                        new
+                        {
+                            ProvinceCode = "KS",
+                            BaseFee = 27000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 16000m,
+                            ProvinceName = "Kalimantan Selatan"
+                        },
+                        new
+                        {
+                            ProvinceCode = "KI",
+                            BaseFee = 29000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 18000m,
+                            ProvinceName = "Kalimantan Timur"
+                        },
+                        new
+                        {
+                            ProvinceCode = "KU",
+                            BaseFee = 32000m,
+                            EstimatedDaysMax = (short)7,
+                            EstimatedDaysMin = (short)4,
+                            IsActive = true,
+                            PerKgFee = 20000m,
+                            ProvinceName = "Kalimantan Utara"
+                        },
+                        new
+                        {
+                            ProvinceCode = "SA",
+                            BaseFee = 32000m,
+                            EstimatedDaysMax = (short)7,
+                            EstimatedDaysMin = (short)4,
+                            IsActive = true,
+                            PerKgFee = 20000m,
+                            ProvinceName = "Sulawesi Utara"
+                        },
+                        new
+                        {
+                            ProvinceCode = "ST",
+                            BaseFee = 33000m,
+                            EstimatedDaysMax = (short)7,
+                            EstimatedDaysMin = (short)4,
+                            IsActive = true,
+                            PerKgFee = 21000m,
+                            ProvinceName = "Sulawesi Tengah"
+                        },
+                        new
+                        {
+                            ProvinceCode = "SN",
+                            BaseFee = 28000m,
+                            EstimatedDaysMax = (short)6,
+                            EstimatedDaysMin = (short)3,
+                            IsActive = true,
+                            PerKgFee = 17000m,
+                            ProvinceName = "Sulawesi Selatan"
+                        },
+                        new
+                        {
+                            ProvinceCode = "SG",
+                            BaseFee = 32000m,
+                            EstimatedDaysMax = (short)7,
+                            EstimatedDaysMin = (short)4,
+                            IsActive = true,
+                            PerKgFee = 20000m,
+                            ProvinceName = "Sulawesi Tenggara"
+                        },
+                        new
+                        {
+                            ProvinceCode = "GO",
+                            BaseFee = 34000m,
+                            EstimatedDaysMax = (short)7,
+                            EstimatedDaysMin = (short)4,
+                            IsActive = true,
+                            PerKgFee = 22000m,
+                            ProvinceName = "Gorontalo"
+                        },
+                        new
+                        {
+                            ProvinceCode = "SR",
+                            BaseFee = 33000m,
+                            EstimatedDaysMax = (short)7,
+                            EstimatedDaysMin = (short)4,
+                            IsActive = true,
+                            PerKgFee = 21000m,
+                            ProvinceName = "Sulawesi Barat"
+                        },
+                        new
+                        {
+                            ProvinceCode = "MA",
+                            BaseFee = 40000m,
+                            EstimatedDaysMax = (short)8,
+                            EstimatedDaysMin = (short)5,
+                            IsActive = true,
+                            PerKgFee = 28000m,
+                            ProvinceName = "Maluku"
+                        },
+                        new
+                        {
+                            ProvinceCode = "MU",
+                            BaseFee = 42000m,
+                            EstimatedDaysMax = (short)8,
+                            EstimatedDaysMin = (short)5,
+                            IsActive = true,
+                            PerKgFee = 30000m,
+                            ProvinceName = "Maluku Utara"
+                        },
+                        new
+                        {
+                            ProvinceCode = "PA",
+                            BaseFee = 50000m,
+                            EstimatedDaysMax = (short)9,
+                            EstimatedDaysMin = (short)5,
+                            IsActive = true,
+                            PerKgFee = 35000m,
+                            ProvinceName = "Papua"
+                        },
+                        new
+                        {
+                            ProvinceCode = "PB",
+                            BaseFee = 50000m,
+                            EstimatedDaysMax = (short)9,
+                            EstimatedDaysMin = (short)5,
+                            IsActive = true,
+                            PerKgFee = 35000m,
+                            ProvinceName = "Papua Barat"
+                        },
+                        new
+                        {
+                            ProvinceCode = "PS",
+                            BaseFee = 55000m,
+                            EstimatedDaysMax = (short)10,
+                            EstimatedDaysMin = (short)6,
+                            IsActive = true,
+                            PerKgFee = 38000m,
+                            ProvinceName = "Papua Selatan"
+                        },
+                        new
+                        {
+                            ProvinceCode = "PT",
+                            BaseFee = 55000m,
+                            EstimatedDaysMax = (short)10,
+                            EstimatedDaysMin = (short)6,
+                            IsActive = true,
+                            PerKgFee = 38000m,
+                            ProvinceName = "Papua Tengah"
+                        },
+                        new
+                        {
+                            ProvinceCode = "PE",
+                            BaseFee = 60000m,
+                            EstimatedDaysMax = (short)12,
+                            EstimatedDaysMin = (short)7,
+                            IsActive = true,
+                            PerKgFee = 42000m,
+                            ProvinceName = "Papua Pegunungan"
+                        },
+                        new
+                        {
+                            ProvinceCode = "PD",
+                            BaseFee = 52000m,
+                            EstimatedDaysMax = (short)9,
+                            EstimatedDaysMin = (short)5,
+                            IsActive = true,
+                            PerKgFee = 36000m,
+                            ProvinceName = "Papua Barat Daya"
                         });
                 });
 
