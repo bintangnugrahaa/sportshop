@@ -32,10 +32,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         await _postgreSqlContainer.StartAsync();
         await _redisContainer.StartAsync();
 
-        // Run migrations on the Testcontainers database instance
+        // Run migrations and identity seeder on the Testcontainers database instance
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.MigrateAsync();
+
+        var seeder = scope.ServiceProvider.GetRequiredService<SportShop.Infrastructure.Identity.IIdentitySeeder>();
+        await seeder.SeedAsync();
     }
 
     public new async Task DisposeAsync()
@@ -47,6 +50,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
         builder.ConfigureAppConfiguration((_, config) =>
         {
             var testConfig = new Dictionary<string, string?>

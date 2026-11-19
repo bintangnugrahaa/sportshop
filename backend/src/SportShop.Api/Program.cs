@@ -3,8 +3,11 @@ using SportShop.Api.Extensions;
 using SportShop.Api.Middleware;
 using SportShop.Application;
 using SportShop.Infrastructure;
+using SportShop.Infrastructure.Identity;
 using SportShop.Infrastructure.Jobs;
 using SportShop.Infrastructure.Observability;
+using SportShop.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,18 @@ authGroup.MapPost("/test-login", () => Results.Ok(new { Message = "Login ok" }))
 
 var checkoutGroup = app.MapGroup("/api/v1/checkout").RequireRateLimiting(RateLimitingExtensions.CheckoutPolicy);
 checkoutGroup.MapPost("/test-checkout", () => Results.Ok(new { Message = "Checkout ok" }));
+
+if (builder.Configuration.GetValue<bool>("AutoMigrate", false))
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (dbContext.Database.IsRelational())
+    {
+        await dbContext.Database.MigrateAsync();
+        var seeder = scope.ServiceProvider.GetRequiredService<IIdentitySeeder>();
+        await seeder.SeedAsync();
+    }
+}
 
 app.Run();
 
