@@ -11,17 +11,20 @@ namespace SportShop.Application.Features.Catalog.Variants.CreateVariant;
 public sealed class CreateVariantCommandHandler
 {
     private readonly IProductRepository _productRepository;
+    private readonly ICacheService _cacheService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly IValidator<CreateVariantCommand> _validator;
 
     public CreateVariantCommandHandler(
         IProductRepository productRepository,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork,
         IClock clock,
         IValidator<CreateVariantCommand> validator)
     {
         _productRepository = productRepository;
+        _cacheService = cacheService;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _validator = validator;
@@ -88,6 +91,7 @@ public sealed class CreateVariantCommandHandler
         await _productRepository.UpdateAsync(product, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _cacheService.RemoveAsync($"prod:detail:{product.Slug.ToLowerInvariant()}:v1", cancellationToken);
 
         return Result.Success(CatalogMapper.ToDto(variant));
     }

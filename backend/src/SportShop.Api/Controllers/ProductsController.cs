@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportShop.Application.Common;
 using SportShop.Application.Features.Catalog.DTOs;
+using SportShop.Application.Features.Catalog.Products.GetBySlug;
 using SportShop.Application.Features.Catalog.Products.List;
 
 namespace SportShop.Api.Controllers;
@@ -12,10 +13,14 @@ namespace SportShop.Api.Controllers;
 public sealed class ProductsController : ControllerBase
 {
     private readonly ListProductsQueryHandler _listProductsHandler;
+    private readonly GetProductBySlugQueryHandler _getProductBySlugHandler;
 
-    public ProductsController(ListProductsQueryHandler listProductsHandler)
+    public ProductsController(
+        ListProductsQueryHandler listProductsHandler,
+        GetProductBySlugQueryHandler getProductBySlugHandler)
     {
         _listProductsHandler = listProductsHandler;
+        _getProductBySlugHandler = getProductBySlugHandler;
     }
 
     /// <summary>
@@ -54,6 +59,28 @@ public sealed class ProductsController : ControllerBase
                     title: result.Error.Description,
                     detail: result.Error.Code)
             };
+        }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Mengambil detail produk berdasarkan slug termasuk varian dan galeri gambar.
+    /// </summary>
+    [HttpGet("{slug}")]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetProductBySlug(
+        [FromRoute] string slug,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _getProductBySlugHandler.HandleAsync(new GetProductBySlugQuery(slug), cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: result.Error.Description,
+                detail: result.Error.Code);
         }
 
         return Ok(result.Value);

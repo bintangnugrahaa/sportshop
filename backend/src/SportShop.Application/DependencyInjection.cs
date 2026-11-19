@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<GetCategoryByIdQueryHandler>();
         services.AddScoped<ListCategoriesQueryHandler>();
         services.AddScoped<DeleteCategoryCommandHandler>();
+        services.AddScoped<Features.Catalog.Categories.GetCategoryTree.GetCategoryTreeQueryHandler>();
 
         // Brands
         services.AddScoped<CreateBrandCommandHandler>();
@@ -60,6 +61,7 @@ public static class DependencyInjection
         services.AddScoped<GetBrandByIdQueryHandler>();
         services.AddScoped<ListBrandsQueryHandler>();
         services.AddScoped<DeleteBrandCommandHandler>();
+        services.AddScoped<Features.Catalog.Brands.GetActiveBrands.GetActiveBrandsQueryHandler>();
 
         // Products
         services.AddScoped<CreateProductCommandHandler>();
@@ -67,6 +69,7 @@ public static class DependencyInjection
         services.AddScoped<GetProductByIdQueryHandler>();
         services.AddScoped<ListAdminProductsQueryHandler>();
         services.AddScoped<Features.Catalog.Products.List.ListProductsQueryHandler>();
+        services.AddScoped<Features.Catalog.Products.GetBySlug.GetProductBySlugQueryHandler>();
         services.AddScoped<DeleteProductCommandHandler>();
 
         // Variants

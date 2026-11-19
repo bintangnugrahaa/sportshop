@@ -8,15 +8,18 @@ public sealed record DeleteProductCommand(Guid Id);
 public sealed class DeleteProductCommandHandler
 {
     private readonly IProductRepository _productRepository;
+    private readonly ICacheService _cacheService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
 
     public DeleteProductCommandHandler(
         IProductRepository productRepository,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork,
         IClock clock)
     {
         _productRepository = productRepository;
+        _cacheService = cacheService;
         _unitOfWork = unitOfWork;
         _clock = clock;
     }
@@ -39,6 +42,7 @@ public sealed class DeleteProductCommandHandler
 
         await _productRepository.UpdateAsync(product, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _cacheService.RemoveAsync($"prod:detail:{product.Slug.ToLowerInvariant()}:v1", cancellationToken);
 
         return Result.Success();
     }

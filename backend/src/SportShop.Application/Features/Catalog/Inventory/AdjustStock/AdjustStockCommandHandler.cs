@@ -10,6 +10,7 @@ namespace SportShop.Application.Features.Catalog.Inventory.AdjustStock;
 public sealed class AdjustStockCommandHandler
 {
     private readonly IProductRepository _productRepository;
+    private readonly ICacheService _cacheService;
     private readonly ICurrentUser _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
@@ -17,12 +18,14 @@ public sealed class AdjustStockCommandHandler
 
     public AdjustStockCommandHandler(
         IProductRepository productRepository,
+        ICacheService cacheService,
         ICurrentUser currentUser,
         IUnitOfWork unitOfWork,
         IClock clock,
         IValidator<AdjustStockCommand> validator)
     {
         _productRepository = productRepository;
+        _cacheService = cacheService;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _clock = clock;
@@ -67,6 +70,12 @@ public sealed class AdjustStockCommandHandler
         await _productRepository.AddInventoryMovementAsync(movement, cancellationToken);
         await _productRepository.UpdateVariantAsync(variant, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var product = await _productRepository.GetByIdAsync(variant.ProductId, false, cancellationToken);
+        if (product is not null)
+        {
+            await _cacheService.RemoveAsync($"prod:detail:{product.Slug.ToLowerInvariant()}:v1", cancellationToken);
+        }
 
         return Result.Success(CatalogMapper.ToDto(movement));
     }

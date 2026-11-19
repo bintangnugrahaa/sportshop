@@ -11,6 +11,7 @@ public sealed class UpdateProductCommandHandler
     private readonly IProductRepository _productRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IBrandRepository _brandRepository;
+    private readonly ICacheService _cacheService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly IValidator<UpdateProductCommand> _validator;
@@ -19,6 +20,7 @@ public sealed class UpdateProductCommandHandler
         IProductRepository productRepository,
         ICategoryRepository categoryRepository,
         IBrandRepository brandRepository,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork,
         IClock clock,
         IValidator<UpdateProductCommand> validator)
@@ -26,6 +28,7 @@ public sealed class UpdateProductCommandHandler
         _productRepository = productRepository;
         _categoryRepository = categoryRepository;
         _brandRepository = brandRepository;
+        _cacheService = cacheService;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _validator = validator;
@@ -63,6 +66,7 @@ public sealed class UpdateProductCommandHandler
             return Result.Failure<ProductDto>(Error.Conflict("product.slug_duplicate", "Slug produk sudah digunakan."));
         }
 
+        var oldSlug = product.Slug;
         var now = _clock.UtcNow;
         product.UpdateDetails(
             command.Name,
@@ -75,6 +79,12 @@ public sealed class UpdateProductCommandHandler
 
         await _productRepository.UpdateAsync(product, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _cacheService.RemoveAsync($"prod:detail:{oldSlug.ToLowerInvariant()}:v1", cancellationToken);
+        if (!string.Equals(oldSlug, command.Slug, StringComparison.OrdinalIgnoreCase))
+        {
+            await _cacheService.RemoveAsync($"prod:detail:{command.Slug.ToLowerInvariant()}:v1", cancellationToken);
+        }
 
         return Result.Success(CatalogMapper.ToDto(product));
     }

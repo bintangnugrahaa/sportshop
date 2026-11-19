@@ -10,17 +10,20 @@ namespace SportShop.Application.Features.Catalog.Categories.CreateCategory;
 public sealed class CreateCategoryCommandHandler
 {
     private readonly ICategoryRepository _categoryRepository;
+    private readonly ICacheService _cacheService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly IValidator<CreateCategoryCommand> _validator;
 
     public CreateCategoryCommandHandler(
         ICategoryRepository categoryRepository,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork,
         IClock clock,
         IValidator<CreateCategoryCommand> validator)
     {
         _categoryRepository = categoryRepository;
+        _cacheService = cacheService;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _validator = validator;
@@ -67,6 +70,7 @@ public sealed class CreateCategoryCommandHandler
 
         await _categoryRepository.AddAsync(category, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _cacheService.RemoveAsync("cat:tree:v1", cancellationToken);
 
         return Result.Success(CatalogMapper.ToDto(category));
     }

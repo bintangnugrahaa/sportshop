@@ -9,15 +9,18 @@ public sealed class DeleteProductImageCommandHandler
 {
     private readonly IProductRepository _productRepository;
     private readonly IFileStorage _fileStorage;
+    private readonly ICacheService _cacheService;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeleteProductImageCommandHandler(
         IProductRepository productRepository,
         IFileStorage fileStorage,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
         _fileStorage = fileStorage;
+        _cacheService = cacheService;
         _unitOfWork = unitOfWork;
     }
 
@@ -45,6 +48,12 @@ public sealed class DeleteProductImageCommandHandler
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var product = await _productRepository.GetByIdAsync(command.ProductId, false, cancellationToken);
+        if (product is not null)
+        {
+            await _cacheService.RemoveAsync($"prod:detail:{product.Slug.ToLowerInvariant()}:v1", cancellationToken);
+        }
 
         return Result.Success();
     }

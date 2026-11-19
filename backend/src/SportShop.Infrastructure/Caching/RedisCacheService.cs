@@ -31,9 +31,11 @@ public sealed partial class RedisCacheService : ICacheService
             var value = await db.StringGetAsync(key).ConfigureAwait(false);
             if (!value.HasValue)
             {
+                LogCacheMiss(_logger, key);
                 return default;
             }
 
+            LogCacheHit(_logger, key);
             return JsonSerializer.Deserialize<T>(value.ToString(), _jsonOptions);
         }
         catch (Exception ex)
@@ -86,6 +88,12 @@ public sealed partial class RedisCacheService : ICacheService
         await SetAsync(key, fresh, expiration, cancellationToken).ConfigureAwait(false);
         return fresh;
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Cache hit for key '{Key}'.")]
+    private static partial void LogCacheHit(ILogger logger, string key);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Cache miss for key '{Key}'.")]
+    private static partial void LogCacheMiss(ILogger logger, string key);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Redis cache GET failed for key '{Key}'. Reason: {Reason}")]
     private static partial void LogCacheGetFailed(ILogger logger, string key, string reason, Exception ex);

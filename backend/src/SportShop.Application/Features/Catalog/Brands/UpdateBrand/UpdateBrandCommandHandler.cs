@@ -9,17 +9,20 @@ namespace SportShop.Application.Features.Catalog.Brands.UpdateBrand;
 public sealed class UpdateBrandCommandHandler
 {
     private readonly IBrandRepository _brandRepository;
+    private readonly ICacheService _cacheService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly IValidator<UpdateBrandCommand> _validator;
 
     public UpdateBrandCommandHandler(
         IBrandRepository brandRepository,
+        ICacheService cacheService,
         IUnitOfWork unitOfWork,
         IClock clock,
         IValidator<UpdateBrandCommand> validator)
     {
         _brandRepository = brandRepository;
+        _cacheService = cacheService;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _validator = validator;
@@ -61,6 +64,7 @@ public sealed class UpdateBrandCommandHandler
 
         await _brandRepository.UpdateAsync(brand, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _cacheService.RemoveAsync("brand:list:v1", cancellationToken);
 
         return Result.Success(CatalogMapper.ToDto(brand));
     }
