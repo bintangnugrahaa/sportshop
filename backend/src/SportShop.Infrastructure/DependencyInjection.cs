@@ -105,6 +105,8 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ICategoryRepository, Persistence.Repositories.CategoryRepository>();
+        services.AddScoped<IBrandRepository, Persistence.Repositories.BrandRepository>();
 
         services.AddSingleton<IConnectionMultiplexer>(sp =>
         {

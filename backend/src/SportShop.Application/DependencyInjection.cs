@@ -7,6 +7,16 @@ using SportShop.Application.Features.Auth.Logout;
 using SportShop.Application.Features.Auth.Refresh;
 using SportShop.Application.Features.Auth.Register;
 using SportShop.Application.Features.Auth.ResetPassword;
+using SportShop.Application.Features.Catalog.Brands.CreateBrand;
+using SportShop.Application.Features.Catalog.Brands.DeleteBrand;
+using SportShop.Application.Features.Catalog.Brands.GetBrand;
+using SportShop.Application.Features.Catalog.Brands.ListBrands;
+using SportShop.Application.Features.Catalog.Brands.UpdateBrand;
+using SportShop.Application.Features.Catalog.Categories.CreateCategory;
+using SportShop.Application.Features.Catalog.Categories.DeleteCategory;
+using SportShop.Application.Features.Catalog.Categories.GetCategory;
+using SportShop.Application.Features.Catalog.Categories.ListCategories;
+using SportShop.Application.Features.Catalog.Categories.UpdateCategory;
 using SportShop.Application.Features.Users.ChangePassword;
 using SportShop.Application.Features.Users.GetProfile;
 using SportShop.Application.Features.Users.UpdateProfile;
@@ -28,6 +38,20 @@ public static class DependencyInjection
         services.AddScoped<ForgotPasswordCommandHandler>();
         services.AddScoped<ResetPasswordCommandHandler>();
         services.AddScoped<ConfirmEmailCommandHandler>();
+
+        // Categories
+        services.AddScoped<CreateCategoryCommandHandler>();
+        services.AddScoped<UpdateCategoryCommandHandler>();
+        services.AddScoped<GetCategoryByIdQueryHandler>();
+        services.AddScoped<ListCategoriesQueryHandler>();
+        services.AddScoped<DeleteCategoryCommandHandler>();
+
+        // Brands
+        services.AddScoped<CreateBrandCommandHandler>();
+        services.AddScoped<UpdateBrandCommandHandler>();
+        services.AddScoped<GetBrandByIdQueryHandler>();
+        services.AddScoped<ListBrandsQueryHandler>();
+        services.AddScoped<DeleteBrandCommandHandler>();
 
         return services;
     }
