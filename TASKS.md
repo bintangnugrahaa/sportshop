@@ -73,7 +73,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | ✓ | ID | Tugas | Dep | Ukuran | Kriteria penerimaan |
 |---|---|---|---|---|---|
 | [x] | T5-01 | Domain `Order` (aggregate) + transisi status + `OrderStatusHistory`; unit test seluruh tabel transisi di `PRD.md` 6.1 | T3-01 | L | Semua transisi ilegal melempar `DomainException` |
-| [ ] | T5-02 | EF + migrasi `orders`, `order_items`, `order_status_histories`, generator nomor pesanan | T5-01 | M | Constraint CHECK & index sesuai `DATABASE.md` |
+| [x] | T5-02 | EF + migrasi `orders`, `order_items`, `order_status_histories`, generator nomor pesanan | T5-01 | M | Constraint CHECK & index sesuai `DATABASE.md` |
 | [ ] | T5-03 | Use case **Checkout**: transaksi, pengurangan stok atomik, snapshot, kosongkan keranjang, idempotency key | T5-02, T4-01, T4-05 | L | Respons 201; stok berkurang; kunci sama → pesanan sama |
 | [ ] | T5-04 | **Uji konkurensi**: 50 checkout paralel, stok 10 → tepat 10 sukses, stok akhir 0 | T5-03 | M | Test integrasi stabil (dijalankan 10× tanpa flake) |
 | [ ] | T5-05 | Customer: daftar & detail pesanan, batal pesanan `PendingPayment` (stok kembali sekali) | T5-03 | M | Batal 2× tidak menggandakan stok |

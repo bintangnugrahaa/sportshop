@@ -55,5 +55,10 @@ public class InventoryMovementConfiguration : IEntityTypeConfiguration<Inventory
             .WithMany()
             .HasForeignKey(m => m.CreatedBy)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne<SportShop.Domain.Orders.Order>()
+            .WithMany()
+            .HasForeignKey(m => m.OrderId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

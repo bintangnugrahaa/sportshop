@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SportShop.Domain.Carts;
 using SportShop.Domain.Catalog;
 using SportShop.Domain.Inventory;
+using SportShop.Domain.Orders;
 using SportShop.Domain.Shipping;
 using SportShop.Domain.Users;
 using SportShop.Infrastructure.Identity;
@@ -28,6 +29,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<ShippingRate> ShippingRates => Set<ShippingRate>();
     public DbSet<Address> Addresses => Set<Address>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderStatusHistory> OrderStatusHistories => Set<OrderStatusHistory>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
