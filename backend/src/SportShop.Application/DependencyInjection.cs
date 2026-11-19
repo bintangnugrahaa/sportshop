@@ -113,6 +113,14 @@ public static class DependencyInjection
         services.AddScoped<Features.Orders.GetCustomerOrder.GetCustomerOrderByNumberQueryHandler>();
         services.AddScoped<Features.Orders.CancelOrder.CancelCustomerOrderCommandHandler>();
 
+        // Admin Orders
+        services.AddScoped<Features.Orders.Admin.ListAdminOrders.ListAdminOrdersQueryHandler>();
+        services.AddScoped<Features.Orders.Admin.GetAdminOrder.GetAdminOrderByNumberQueryHandler>();
+        services.AddScoped<Features.Orders.Admin.ProcessOrder.ProcessOrderCommandHandler>();
+        services.AddScoped<Features.Orders.Admin.ShipOrder.ShipOrderCommandHandler>();
+        services.AddScoped<Features.Orders.Admin.CompleteOrder.CompleteOrderCommandHandler>();
+        services.AddScoped<Features.Orders.Admin.CancelAdminOrder.CancelAdminOrderCommandHandler>();
+
         return services;
     }
 }

@@ -78,7 +78,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T5-04 | **Uji konkurensi**: 50 checkout paralel, stok 10 → tepat 10 sukses, stok akhir 0 | T5-03 | M | Test integrasi stabil (dijalankan 10× tanpa flake) |
 | [x] | T5-05 | Customer: daftar & detail pesanan, batal pesanan `PendingPayment` (stok kembali sekali) | T5-03 | M | Batal 2× tidak menggandakan stok |
 | [x] | T5-06 | Job `ExpireUnpaidOrdersJob` | T5-05, T1-09 | M | Pesanan lewat `expires_at` → Expired, stok kembali, idempoten |
-| [ ] | T5-07 | Admin: daftar/detail pesanan, `process`, `ship` (kurir + resi wajib), `complete`, `cancel` | T5-01, T2-02 | L | Test transisi + otorisasi |
+| [x] | T5-07 | Admin: daftar/detail pesanan, `process`, `ship` (kurir + resi wajib), `complete`, `cancel` | T5-01, T2-02 | L | Test transisi + otorisasi |
 
 ## Fase 6 — Pembayaran Midtrans
 
