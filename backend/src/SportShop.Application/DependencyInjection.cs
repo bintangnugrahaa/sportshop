@@ -66,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateProductCommandHandler>();
         services.AddScoped<GetProductByIdQueryHandler>();
         services.AddScoped<ListAdminProductsQueryHandler>();
+        services.AddScoped<Features.Catalog.Products.List.ListProductsQueryHandler>();
         services.AddScoped<DeleteProductCommandHandler>();
 
         // Variants

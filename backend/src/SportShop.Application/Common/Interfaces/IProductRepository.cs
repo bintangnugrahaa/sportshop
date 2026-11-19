@@ -29,4 +29,15 @@ public interface IProductRepository
     Task RemoveImageAsync(ProductImage image, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ProductVariant>> GetLowStockVariantsAsync(int threshold = 5, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<InventoryMovement>> GetVariantMovementsAsync(Guid variantId, CancellationToken cancellationToken = default);
+    Task<(IReadOnlyList<Product> Items, int TotalCount)> GetPublicProductsAsync(
+        string? q = null,
+        string? categorySlug = null,
+        string? brandSlug = null,
+        decimal? minPrice = null,
+        decimal? maxPrice = null,
+        bool? inStock = null,
+        string? sort = null,
+        int page = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default);
 }

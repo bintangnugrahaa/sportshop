@@ -195,4 +195,83 @@ public sealed class ProductRepository : IProductRepository
             .OrderByDescending(m => m.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<(IReadOnlyList<Product> Items, int TotalCount)> GetPublicProductsAsync(
+        string? q = null,
+        string? categorySlug = null,
+        string? brandSlug = null,
+        decimal? minPrice = null,
+        decimal? maxPrice = null,
+        bool? inStock = null,
+        string? sort = null,
+        int page = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Products
+            .Where(p => p.IsActive)
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(categorySlug))
+        {
+            var catSlug = categorySlug.Trim().ToLowerInvariant();
+            query = query.Where(p => p.Category.Slug == catSlug || (p.Category.Parent != null && p.Category.Parent.Slug == catSlug));
+        }
+
+        if (!string.IsNullOrWhiteSpace(brandSlug))
+        {
+            var bSlug = brandSlug.Trim().ToLowerInvariant();
+            query = query.Where(p => p.Brand.Slug == bSlug);
+        }
+
+        if (minPrice.HasValue)
+        {
+            query = query.Where(p => p.BasePrice >= minPrice.Value);
+        }
+
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(p => p.BasePrice <= maxPrice.Value);
+        }
+
+        if (inStock.HasValue)
+        {
+            if (inStock.Value)
+            {
+                query = query.Where(p => p.Variants.Any(v => v.IsActive && v.StockQuantity > 0));
+            }
+            else
+            {
+                query = query.Where(p => !p.Variants.Any(v => v.IsActive && v.StockQuantity > 0));
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var search = q.Trim();
+            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{search}%") || EF.Functions.ILike(p.Description, $"%{search}%"));
+        }
+
+        var normalizedSort = sort?.Trim().ToLowerInvariant() ?? "newest";
+        query = normalizedSort switch
+        {
+            "price_asc" => query.OrderBy(p => p.BasePrice).ThenByDescending(p => p.CreatedAt),
+            "price_desc" => query.OrderByDescending(p => p.BasePrice).ThenByDescending(p => p.CreatedAt),
+            "name" => query.OrderBy(p => p.Name).ThenByDescending(p => p.CreatedAt),
+            _ => query.OrderByDescending(p => p.CreatedAt)
+        };
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Include(p => p.Variants.Where(v => v.IsActive))
+            .Include(p => p.Images.OrderBy(i => i.SortOrder))
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
 }

@@ -14,4 +14,11 @@ public sealed record ProductDto(
     DateTime CreatedAt,
     DateTime? UpdatedAt,
     List<ProductVariantDto>? Variants = null,
-    List<ProductImageDto>? Images = null);
+    List<ProductImageDto>? Images = null,
+    string? CategorySlug = null,
+    string? BrandSlug = null,
+    string? PrimaryImageUrl = null,
+    bool InStock = true,
+    decimal? MinPrice = null,
+    decimal? MaxPrice = null,
+    int? TotalStock = null);

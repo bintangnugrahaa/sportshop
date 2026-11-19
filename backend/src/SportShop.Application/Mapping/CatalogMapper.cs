@@ -20,7 +20,14 @@ public static partial class CatalogMapper
     public static partial List<BrandDto> ToBrandDtoList(IEnumerable<Brand> brands);
 
     [MapProperty(nameof(Product.Category.Name), nameof(ProductDto.CategoryName))]
+    [MapProperty(nameof(Product.Category.Slug), nameof(ProductDto.CategorySlug))]
     [MapProperty(nameof(Product.Brand.Name), nameof(ProductDto.BrandName))]
+    [MapProperty(nameof(Product.Brand.Slug), nameof(ProductDto.BrandSlug))]
+    [MapperIgnoreTarget(nameof(ProductDto.PrimaryImageUrl))]
+    [MapperIgnoreTarget(nameof(ProductDto.InStock))]
+    [MapperIgnoreTarget(nameof(ProductDto.MinPrice))]
+    [MapperIgnoreTarget(nameof(ProductDto.MaxPrice))]
+    [MapperIgnoreTarget(nameof(ProductDto.TotalStock))]
     public static partial ProductDto ToDto(Product product);
 
     public static partial List<ProductDto> ToProductDtoList(IEnumerable<Product> products);
