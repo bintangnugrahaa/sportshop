@@ -23,4 +23,8 @@ public interface IProductRepository
     Task AddVariantAsync(ProductVariant variant, CancellationToken cancellationToken = default);
     Task UpdateVariantAsync(ProductVariant variant, CancellationToken cancellationToken = default);
     Task AddInventoryMovementAsync(InventoryMovement movement, CancellationToken cancellationToken = default);
+    Task<ProductImage?> GetImageByIdAsync(Guid imageId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ProductImage>> GetProductImagesAsync(Guid productId, CancellationToken cancellationToken = default);
+    Task AddImageAsync(ProductImage image, CancellationToken cancellationToken = default);
+    Task RemoveImageAsync(ProductImage image, CancellationToken cancellationToken = default);
 }

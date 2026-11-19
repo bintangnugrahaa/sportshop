@@ -25,6 +25,8 @@ public class AdminProductsController : ControllerBase
     private readonly ListAdminProductsQueryHandler _listHandler;
     private readonly DeleteProductCommandHandler _deleteHandler;
     private readonly CreateVariantCommandHandler _createVariantHandler;
+    private readonly Application.Features.Catalog.Images.UploadImage.UploadProductImageCommandHandler _uploadImageHandler;
+    private readonly Application.Features.Catalog.Images.DeleteImage.DeleteProductImageCommandHandler _deleteImageHandler;
 
     public AdminProductsController(
         CreateProductCommandHandler createHandler,
@@ -32,7 +34,9 @@ public class AdminProductsController : ControllerBase
         GetProductByIdQueryHandler getByIdHandler,
         ListAdminProductsQueryHandler listHandler,
         DeleteProductCommandHandler deleteHandler,
-        CreateVariantCommandHandler createVariantHandler)
+        CreateVariantCommandHandler createVariantHandler,
+        Application.Features.Catalog.Images.UploadImage.UploadProductImageCommandHandler uploadImageHandler,
+        Application.Features.Catalog.Images.DeleteImage.DeleteProductImageCommandHandler deleteImageHandler)
     {
         _createHandler = createHandler;
         _updateHandler = updateHandler;
@@ -40,6 +44,8 @@ public class AdminProductsController : ControllerBase
         _listHandler = listHandler;
         _deleteHandler = deleteHandler;
         _createVariantHandler = createVariantHandler;
+        _uploadImageHandler = uploadImageHandler;
+        _deleteImageHandler = deleteImageHandler;
     }
 
     [HttpGet]
@@ -166,6 +172,64 @@ public class AdminProductsController : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, result.Value);
     }
+
+    [HttpPost("{id:guid}/images")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(ProductImageDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UploadImage(
+        Guid id,
+        [FromForm] UploadProductImageFormRequest form,
+        CancellationToken cancellationToken)
+    {
+        if (form.File is null || form.File.Length == 0)
+        {
+            var problem = Error.Validation("file.empty", "File gambar tidak boleh kosong.").ToProblemDetails(HttpContext);
+            return StatusCode(StatusCodes.Status400BadRequest, problem);
+        }
+
+        await using var stream = form.File.OpenReadStream();
+        var command = new Application.Features.Catalog.Images.UploadImage.UploadProductImageCommand(
+            id,
+            stream,
+            form.File.FileName,
+            form.File.ContentType,
+            form.File.Length,
+            form.AltText,
+            form.SortOrder,
+            form.IsPrimary);
+
+        var result = await _uploadImageHandler.HandleAsync(command, cancellationToken);
+        if (result.IsFailure)
+        {
+            return result.ToActionResult(HttpContext);
+        }
+
+        return StatusCode(StatusCodes.Status201Created, result.Value);
+    }
+
+    [HttpDelete("{id:guid}/images/{imageId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteImage(Guid id, Guid imageId, CancellationToken cancellationToken)
+    {
+        var command = new Application.Features.Catalog.Images.DeleteImage.DeleteProductImageCommand(id, imageId);
+        var result = await _deleteImageHandler.HandleAsync(command, cancellationToken);
+        return result.ToActionResult(HttpContext);
+    }
+}
+
+public sealed class UploadProductImageFormRequest
+{
+    public IFormFile File { get; set; } = null!;
+    public string? AltText { get; set; }
+    public int? SortOrder { get; set; }
+    public bool IsPrimary { get; set; }
 }
 
 public sealed record CreateProductRequest(

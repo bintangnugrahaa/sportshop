@@ -34,6 +34,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSportShopRequestLogging();
 
 app.UseCors(CorsExtensions.PolicyName);
+app.UseStaticFiles();
 app.UseRateLimiter();
 
 app.UseAuthentication();

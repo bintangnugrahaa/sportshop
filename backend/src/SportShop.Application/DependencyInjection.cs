@@ -73,6 +73,10 @@ public static class DependencyInjection
         services.AddScoped<UpdateVariantCommandHandler>();
         services.AddScoped<DeleteVariantCommandHandler>();
 
+        // Images
+        services.AddScoped<Features.Catalog.Images.UploadImage.UploadProductImageCommandHandler>();
+        services.AddScoped<Features.Catalog.Images.DeleteImage.DeleteProductImageCommandHandler>();
+
         return services;
     }
 }

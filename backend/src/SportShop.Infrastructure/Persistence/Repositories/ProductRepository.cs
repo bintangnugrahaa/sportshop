@@ -154,4 +154,28 @@ public sealed class ProductRepository : IProductRepository
     {
         await _context.InventoryMovements.AddAsync(movement, cancellationToken);
     }
+
+    public async Task<ProductImage?> GetImageByIdAsync(Guid imageId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ProductImages.FirstOrDefaultAsync(i => i.Id == imageId, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ProductImage>> GetProductImagesAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ProductImages
+            .Where(i => i.ProductId == productId)
+            .OrderBy(i => i.SortOrder)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task AddImageAsync(ProductImage image, CancellationToken cancellationToken = default)
+    {
+        await _context.ProductImages.AddAsync(image, cancellationToken);
+    }
+
+    public Task RemoveImageAsync(ProductImage image, CancellationToken cancellationToken = default)
+    {
+        _context.ProductImages.Remove(image);
+        return Task.CompletedTask;
+    }
 }
