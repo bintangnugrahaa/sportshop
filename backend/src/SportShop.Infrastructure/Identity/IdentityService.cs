@@ -333,6 +333,91 @@ public sealed partial class IdentityService : IIdentityService
         return Result.Success();
     }
 
+    public async Task<Result<string?>> GeneratePasswordResetTokenAsync(
+        string email,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null || !user.IsActive)
+        {
+            return Result.Success<string?>(null);
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        return Result.Success<string?>(token);
+    }
+
+    public async Task<Result> ResetPasswordAsync(
+        string email,
+        string token,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null || !user.IsActive)
+        {
+            return Result.Failure(Error.Validation("auth.invalid_reset_token", "Token reset tidak valid atau sudah kedaluwarsa."));
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        if (!result.Succeeded)
+        {
+            var errorDescription = string.Join("; ", result.Errors.Select(e => e.Description));
+            return Result.Failure(Error.Validation("auth.invalid_reset_token", errorDescription));
+        }
+
+        await _userManager.ResetAccessFailedCountAsync(user);
+        user.UpdatedAt = _clock.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        LogPasswordReset(_logger, email);
+        return Result.Success();
+    }
+
+    public async Task<Result<string?>> GenerateEmailConfirmationTokenAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null || !user.IsActive)
+        {
+            return Result.Failure<string?>(Error.NotFound("user.not_found", "Pengguna tidak ditemukan."));
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        return Result.Success<string?>(token);
+    }
+
+    public async Task<Result> ConfirmEmailAsync(
+        Guid userId,
+        string token,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null || !user.IsActive)
+        {
+            return Result.Failure(Error.Validation("auth.invalid_confirm_token", "Pengguna tidak ditemukan atau tidak aktif."));
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return Result.Failure(Error.Validation("auth.already_confirmed", "Email sudah dikonfirmasi sebelumnya."));
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (!result.Succeeded)
+        {
+            var errorDescription = string.Join("; ", result.Errors.Select(e => e.Description));
+            return Result.Failure(Error.Validation("auth.invalid_confirm_token", errorDescription));
+        }
+
+        user.UpdatedAt = _clock.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        LogEmailConfirmed(_logger, user.Email!);
+        return Result.Success();
+    }
+
     [LoggerMessage(Level = LogLevel.Information, Message = "User {Email} registered successfully with ID {UserId}.")]
     private static partial void LogUserRegistered(ILogger logger, string email, Guid userId);
 
@@ -350,4 +435,10 @@ public sealed partial class IdentityService : IIdentityService
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Refresh token revoked for user {UserId}. Reason: {Reason}")]
     private static partial void LogTokenRevoked(ILogger logger, Guid userId, string reason);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Password reset successfully for user {Email}.")]
+    private static partial void LogPasswordReset(ILogger logger, string email);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Email confirmed successfully for user {Email}.")]
+    private static partial void LogEmailConfirmed(ILogger logger, string email);
 }

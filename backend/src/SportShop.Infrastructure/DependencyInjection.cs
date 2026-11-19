@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SportShop.Application.Common.Interfaces;
 using SportShop.Infrastructure.Caching;
+using SportShop.Infrastructure.Email;
 using SportShop.Infrastructure.Identity;
 using SportShop.Infrastructure.Jobs;
 using SportShop.Infrastructure.Observability;
@@ -96,6 +97,7 @@ public static class DependencyInjection
 
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddTransient<IEmailSender, SmtpEmailSender>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();

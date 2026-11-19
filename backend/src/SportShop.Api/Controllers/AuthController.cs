@@ -4,10 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SportShop.Api.Extensions;
 using SportShop.Api.Models;
+using SportShop.Application.Features.Auth.ConfirmEmail;
+using SportShop.Application.Features.Auth.ForgotPassword;
 using SportShop.Application.Features.Auth.Login;
 using SportShop.Application.Features.Auth.Logout;
 using SportShop.Application.Features.Auth.Refresh;
 using SportShop.Application.Features.Auth.Register;
+using SportShop.Application.Features.Auth.ResetPassword;
 
 namespace SportShop.Api.Controllers;
 
@@ -22,17 +25,26 @@ public class AuthController : ControllerBase
     private readonly LoginCommandHandler _loginHandler;
     private readonly RefreshTokenCommandHandler _refreshHandler;
     private readonly LogoutCommandHandler _logoutHandler;
+    private readonly ForgotPasswordCommandHandler _forgotPasswordHandler;
+    private readonly ResetPasswordCommandHandler _resetPasswordHandler;
+    private readonly ConfirmEmailCommandHandler _confirmEmailHandler;
 
     public AuthController(
         RegisterCommandHandler registerHandler,
         LoginCommandHandler loginHandler,
         RefreshTokenCommandHandler refreshHandler,
-        LogoutCommandHandler logoutHandler)
+        LogoutCommandHandler logoutHandler,
+        ForgotPasswordCommandHandler forgotPasswordHandler,
+        ResetPasswordCommandHandler resetPasswordHandler,
+        ConfirmEmailCommandHandler confirmEmailHandler)
     {
         _registerHandler = registerHandler;
         _loginHandler = loginHandler;
         _refreshHandler = refreshHandler;
         _logoutHandler = logoutHandler;
+        _forgotPasswordHandler = forgotPasswordHandler;
+        _resetPasswordHandler = resetPasswordHandler;
+        _confirmEmailHandler = confirmEmailHandler;
     }
 
     [HttpPost("register")]
@@ -105,6 +117,48 @@ public class AuthController : ControllerBase
         });
 
         return Ok(new { Message = "Logout berhasil." });
+    }
+
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _forgotPasswordHandler.HandleAsync(command, cancellationToken);
+        if (result.IsFailure)
+        {
+            return result.ToActionResult(HttpContext);
+        }
+
+        return Ok(new { Message = "Jika email terdaftar, instruksi reset kata sandi telah dikirim ke alamat email Anda." });
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _resetPasswordHandler.HandleAsync(command, cancellationToken);
+        if (result.IsFailure)
+        {
+            return result.ToActionResult(HttpContext);
+        }
+
+        return Ok(new { Message = "Kata sandi berhasil direset. Silakan masuk dengan kata sandi baru Anda." });
+    }
+
+    [HttpPost("confirm-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _confirmEmailHandler.HandleAsync(command, cancellationToken);
+        if (result.IsFailure)
+        {
+            return result.ToActionResult(HttpContext);
+        }
+
+        return Ok(new { Message = "Email berhasil dikonfirmasi." });
     }
 
     private void SetRefreshTokenCookie(string refreshToken, DateTime expiresAt)
