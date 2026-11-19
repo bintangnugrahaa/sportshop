@@ -63,6 +63,7 @@ public static partial class HangfireExtensions
         });
 
         services.AddTransient<ISampleJob, SampleJob>();
+        services.AddScoped<Application.Common.Interfaces.IExpireUnpaidOrdersJob, ExpireUnpaidOrdersJob>();
 
         return services;
     }
@@ -85,6 +86,32 @@ public static partial class HangfireExtensions
                 Authorization = [new HangfireAdminAuthorizationFilter()],
                 DashboardTitle = "SportShop - Hangfire Dashboard"
             }, storage);
+
+            app.UseSportShopRecurringJobs();
+        }
+        catch (Exception)
+        {
+            // Do not crash host if storage is temporarily unreachable
+        }
+
+        return app;
+    }
+
+    public static IApplicationBuilder UseSportShopRecurringJobs(this IApplicationBuilder app)
+    {
+        var storage = app.ApplicationServices.GetService<JobStorage>();
+        if (storage is null)
+        {
+            return app;
+        }
+
+        try
+        {
+            var recurringJobManager = app.ApplicationServices.GetService<IRecurringJobManager>();
+            recurringJobManager?.AddOrUpdate<Application.Common.Interfaces.IExpireUnpaidOrdersJob>(
+                "expire-unpaid-orders",
+                job => job.ExecuteAsync(CancellationToken.None),
+                "*/5 * * * *");
         }
         catch (Exception)
         {
