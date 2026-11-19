@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SportShop.Api.Extensions;
 using SportShop.Api.Models;
 using SportShop.Application.Features.Auth.Login;
+using SportShop.Application.Features.Auth.Logout;
 using SportShop.Application.Features.Auth.Refresh;
 using SportShop.Application.Features.Auth.Register;
 
@@ -19,15 +21,18 @@ public class AuthController : ControllerBase
     private readonly RegisterCommandHandler _registerHandler;
     private readonly LoginCommandHandler _loginHandler;
     private readonly RefreshTokenCommandHandler _refreshHandler;
+    private readonly LogoutCommandHandler _logoutHandler;
 
     public AuthController(
         RegisterCommandHandler registerHandler,
         LoginCommandHandler loginHandler,
-        RefreshTokenCommandHandler refreshHandler)
+        RefreshTokenCommandHandler refreshHandler,
+        LogoutCommandHandler logoutHandler)
     {
         _registerHandler = registerHandler;
         _loginHandler = loginHandler;
         _refreshHandler = refreshHandler;
+        _logoutHandler = logoutHandler;
     }
 
     [HttpPost("register")]
@@ -83,6 +88,23 @@ public class AuthController : ControllerBase
         SetRefreshTokenCookie(result.Value.RefreshToken, result.Value.RefreshTokenExpiresAt);
 
         return Ok(new RefreshTokenResponse(result.Value.AccessToken, result.Value.ExpiresIn));
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+    {
+        var rawToken = Request.Cookies[RefreshTokenCookieName];
+        await _logoutHandler.HandleAsync(new LogoutCommand(rawToken), GetIpAddress(), cancellationToken);
+
+        Response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
+        {
+            Path = "/api/v1/auth"
+        });
+
+        return Ok(new { Message = "Logout berhasil." });
     }
 
     private void SetRefreshTokenCookie(string refreshToken, DateTime expiresAt)

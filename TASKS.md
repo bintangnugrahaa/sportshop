@@ -40,7 +40,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T2-02 | `JwtTokenService`, konfigurasi JWT Bearer, policy `Admin` | T2-01 | M | Token valid diterima, kedaluwarsa/rusak → 401 |
 | [x] | T2-03 | Register + FluentValidation + test | T2-01 | S | Email duplikat → 409/400 sesuai kontrak |
 | [x] | T2-04 | Login + lockout + refresh token (hash, rotasi, family, reuse detection) + cookie HttpOnly | T2-02 | L | Reuse token lama mencabut seluruh family (test) |
-| [ ] | T2-05 | Logout, profil (`/me`), ganti password | T2-04 | S | Test integrasi |
+| [x] | T2-05 | Logout, profil (`/me`), ganti password | T2-04 | S | Test integrasi |
 | [ ] | T2-06 | Abstraksi `IEmailSender` + `SmtpEmailSender` (Mailpit di dev), lalu lupa/reset password + konfirmasi email | T2-04, T1-09 | M | Email terlihat di Mailpit; token sekali pakai |
 | [ ] | T2-07 | Test keamanan: akses tanpa token, role salah, ownership | T2-04 | S | Matriks 401/403/404 lulus |
 

@@ -162,7 +162,6 @@ public sealed partial class IdentityService : IIdentityService
                 "Refresh token tidak valid."));
         }
 
-        // Reuse detection: if already revoked, revoke the entire family!
         if (token.RevokedAt is not null)
         {
             var familyTokens = await _dbContext.RefreshTokens
@@ -205,7 +204,6 @@ public sealed partial class IdentityService : IIdentityService
                 "Akun pengguna sedang terkunci."));
         }
 
-        // Token rotation: create new token in the same family, revoke the current token
         var (newRawToken, newTokenHash) = _jwtTokenService.GenerateRefreshToken();
         var newRefreshToken = new RefreshToken
         {
@@ -234,6 +232,107 @@ public sealed partial class IdentityService : IIdentityService
         return Result.Success(new AuthTokenResult(accessToken, expiresIn, newRawToken, newRefreshToken.ExpiresAt));
     }
 
+    public async Task<Result> RevokeRefreshTokenAsync(
+        string rawRefreshToken,
+        string? ipAddress,
+        CancellationToken cancellationToken = default)
+    {
+        var tokenHash = _jwtTokenService.HashToken(rawRefreshToken);
+        var token = await _dbContext.RefreshTokens.FirstOrDefaultAsync(r => r.TokenHash == tokenHash, cancellationToken);
+        if (token is null)
+        {
+            return Result.Success();
+        }
+
+        if (token.RevokedAt is null)
+        {
+            token.RevokedAt = _clock.UtcNow;
+            token.RevokeReason = "Logout";
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            LogTokenRevoked(_logger, token.UserId, "Logout");
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result<UserProfileResult>> GetUserProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null || !user.IsActive)
+        {
+            return Result.Failure<UserProfileResult>(Error.NotFound("user.not_found", "Pengguna tidak ditemukan."));
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        return Result.Success(new UserProfileResult(
+            user.Id,
+            user.Email!,
+            user.FullName,
+            user.PhoneNumber,
+            roles.ToList().AsReadOnly(),
+            user.CreatedAt));
+    }
+
+    public async Task<Result<UserProfileResult>> UpdateUserProfileAsync(
+        Guid userId,
+        string fullName,
+        string? phoneNumber,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null || !user.IsActive)
+        {
+            return Result.Failure<UserProfileResult>(Error.NotFound("user.not_found", "Pengguna tidak ditemukan."));
+        }
+
+        user.FullName = fullName;
+        user.PhoneNumber = phoneNumber;
+        user.UpdatedAt = _clock.UtcNow;
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            var errorDescription = string.Join("; ", updateResult.Errors.Select(e => e.Description));
+            return Result.Failure<UserProfileResult>(Error.Validation("user.update_failed", errorDescription));
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        return Result.Success(new UserProfileResult(
+            user.Id,
+            user.Email!,
+            user.FullName,
+            user.PhoneNumber,
+            roles.ToList().AsReadOnly(),
+            user.CreatedAt));
+    }
+
+    public async Task<Result> ChangePasswordAsync(
+        Guid userId,
+        string currentPassword,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null || !user.IsActive)
+        {
+            return Result.Failure(Error.NotFound("user.not_found", "Pengguna tidak ditemukan."));
+        }
+
+        var changeResult = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!changeResult.Succeeded)
+        {
+            var errorDescription = string.Join("; ", changeResult.Errors.Select(e => e.Description));
+            return Result.Failure(Error.Validation("auth.invalid_password", errorDescription));
+        }
+
+        user.UpdatedAt = _clock.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        return Result.Success();
+    }
+
     [LoggerMessage(Level = LogLevel.Information, Message = "User {Email} registered successfully with ID {UserId}.")]
     private static partial void LogUserRegistered(ILogger logger, string email, Guid userId);
 
@@ -248,4 +347,7 @@ public sealed partial class IdentityService : IIdentityService
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Refresh token rotated successfully for user {UserId} and family {FamilyId}.")]
     private static partial void LogTokenRotated(ILogger logger, Guid userId, Guid familyId);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Refresh token revoked for user {UserId}. Reason: {Reason}")]
+    private static partial void LogTokenRevoked(ILogger logger, Guid userId, string reason);
 }
