@@ -75,7 +75,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T5-01 | Domain `Order` (aggregate) + transisi status + `OrderStatusHistory`; unit test seluruh tabel transisi di `PRD.md` 6.1 | T3-01 | L | Semua transisi ilegal melempar `DomainException` |
 | [x] | T5-02 | EF + migrasi `orders`, `order_items`, `order_status_histories`, generator nomor pesanan | T5-01 | M | Constraint CHECK & index sesuai `DATABASE.md` |
 | [x] | T5-03 | Use case **Checkout**: transaksi, pengurangan stok atomik, snapshot, kosongkan keranjang, idempotency key | T5-02, T4-01, T4-05 | L | Respons 201; stok berkurang; kunci sama → pesanan sama |
-| [ ] | T5-04 | **Uji konkurensi**: 50 checkout paralel, stok 10 → tepat 10 sukses, stok akhir 0 | T5-03 | M | Test integrasi stabil (dijalankan 10× tanpa flake) |
+| [x] | T5-04 | **Uji konkurensi**: 50 checkout paralel, stok 10 → tepat 10 sukses, stok akhir 0 | T5-03 | M | Test integrasi stabil (dijalankan 10× tanpa flake) |
 | [ ] | T5-05 | Customer: daftar & detail pesanan, batal pesanan `PendingPayment` (stok kembali sekali) | T5-03 | M | Batal 2× tidak menggandakan stok |
 | [ ] | T5-06 | Job `ExpireUnpaidOrdersJob` | T5-05, T1-09 | M | Pesanan lewat `expires_at` → Expired, stok kembali, idempoten |
 | [ ] | T5-07 | Admin: daftar/detail pesanan, `process`, `ship` (kurir + resi wajib), `complete`, `cancel` | T5-01, T2-02 | L | Test transisi + otorisasi |
