@@ -95,6 +95,7 @@ public static class DependencyInjection
         .AddDefaultTokenProviders();
 
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();
+        services.AddScoped<IIdentityService, IdentityService>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
