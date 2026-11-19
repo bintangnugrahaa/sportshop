@@ -62,7 +62,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 
 | ✓ | ID | Tugas | Dep | Ukuran | Kriteria penerimaan |
 |---|---|---|---|---|---|
-| [ ] | T4-01 | Domain + EF `carts`, `cart_items`; use case Get/Add/Update/Remove/Clear | T3-01, T2-02 | M | Jumlah > stok ditolak; satu keranjang per user |
+| [x] | T4-01 | Domain + EF `carts`, `cart_items`; use case Get/Add/Update/Remove/Clear | T3-01, T2-02 | M | Jumlah > stok ditolak; satu keranjang per user |
 | [ ] | T4-02 | Respons keranjang menandai item yang harga/stok berubah atau varian nonaktif | T4-01 | S | Test skenario |
 | [ ] | T4-03 | Tabel `shipping_rates` + seed provinsi + `ShippingCalculator` (unit test aturan: min 1 kg, `ceil`) | T1-06 | M | Unit test rumus lulus, termasuk batas |
 | [ ] | T4-04 | Admin kelola tarif ongkir + cache `ship:rates:v1` | T4-03 | S | Perubahan tarif tercermin segera |

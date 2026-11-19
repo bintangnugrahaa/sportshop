@@ -155,6 +155,82 @@ namespace SportShop.Infrastructure.Persistence.Migrations
                     b.ToTable("user_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("SportShop.Domain.Carts.Cart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_carts");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_carts_user_id");
+
+                    b.ToTable("carts", (string)null);
+                });
+
+            modelBuilder.Entity("SportShop.Domain.Carts.CartItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CartId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cart_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal>("PriceAtAdd")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("price_at_add");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("variant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cart_items");
+
+                    b.HasIndex("VariantId")
+                        .HasDatabaseName("ix_cart_items_variant_id");
+
+                    b.HasIndex("CartId", "VariantId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_cart_items_cart_id_variant_id");
+
+                    b.ToTable("cart_items", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_cart_items_quantity", "quantity > 0");
+                        });
+                });
+
             modelBuilder.Entity("SportShop.Domain.Catalog.Brand", b =>
                 {
                     b.Property<Guid>("Id")
@@ -805,6 +881,37 @@ namespace SportShop.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_user_tokens_users_user_id");
                 });
 
+            modelBuilder.Entity("SportShop.Domain.Carts.Cart", b =>
+                {
+                    b.HasOne("SportShop.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_carts_users_user_id");
+                });
+
+            modelBuilder.Entity("SportShop.Domain.Carts.CartItem", b =>
+                {
+                    b.HasOne("SportShop.Domain.Carts.Cart", "Cart")
+                        .WithMany("Items")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_cart_items_carts_cart_id");
+
+                    b.HasOne("SportShop.Domain.Catalog.ProductVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_cart_items_product_variants_variant_id");
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Variant");
+                });
+
             modelBuilder.Entity("SportShop.Domain.Catalog.Category", b =>
                 {
                     b.HasOne("SportShop.Domain.Catalog.Category", "Parent")
@@ -889,6 +996,11 @@ namespace SportShop.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_refresh_tokens_users_user_id");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SportShop.Domain.Carts.Cart", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("SportShop.Domain.Catalog.Brand", b =>

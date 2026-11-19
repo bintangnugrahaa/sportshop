@@ -85,6 +85,13 @@ public static class DependencyInjection
         services.AddScoped<Features.Catalog.Inventory.AdjustStock.AdjustStockCommandHandler>();
         services.AddScoped<Features.Catalog.Inventory.LowStock.GetLowStockVariantsQueryHandler>();
 
+        // Cart
+        services.AddScoped<Features.Cart.GetCart.GetCartQueryHandler>();
+        services.AddScoped<Features.Cart.AddItem.AddCartItemCommandHandler>();
+        services.AddScoped<Features.Cart.UpdateItem.UpdateCartItemCommandHandler>();
+        services.AddScoped<Features.Cart.RemoveItem.RemoveCartItemCommandHandler>();
+        services.AddScoped<Features.Cart.Clear.ClearCartCommandHandler>();
+
         return services;
     }
 }
