@@ -96,6 +96,7 @@ public static class DependencyInjection
         .AddDefaultTokenProviders();
 
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();
+        services.AddScoped<ICatalogDemoSeeder, Seeders.CatalogDemoSeeder>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddTransient<IEmailSender, SmtpEmailSender>();
         services.AddHttpContextAccessor();

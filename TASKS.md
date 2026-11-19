@@ -56,7 +56,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T3-06 | `GET /products` (filter, sortir, paginasi) dengan proyeksi & Mapperly | T3-03 | L | EXPLAIN memakai index; test untuk tiap filter |
 | [x] | T3-07 | Pencarian full-text + trigram (`search_vector`, `pg_trgm`) | T3-06 | M | Cari "sepatu lari" dan salah ketik "sepaatu" memberi hasil relevan |
 | [x] | T3-08 | `GET /products/{slug}`, `/categories`, `/brands` + cache Redis & invalidasi | T3-06, T1-07 | M | Cache hit terlihat di log; invalidasi saat admin ubah data |
-| [ ] | T3-09 | Seeder data demo (flag `SEED_DEMO_DATA`) | T3-03 | S | ±30 produk terisi di dev |
+| [x] | T3-09 | Seeder data demo (flag `SEED_DEMO_DATA`) | T3-03 | S | ±30 produk terisi di dev |
 
 ## Fase 4 — Keranjang, Alamat, Ongkir
 

@@ -2,6 +2,7 @@ using Serilog;
 using SportShop.Api.Extensions;
 using SportShop.Api.Middleware;
 using SportShop.Application;
+using SportShop.Application.Common.Interfaces;
 using SportShop.Infrastructure;
 using SportShop.Infrastructure.Identity;
 using SportShop.Infrastructure.Jobs;
@@ -69,6 +70,9 @@ if (builder.Configuration.GetValue<bool>("AutoMigrate", false))
         await dbContext.Database.MigrateAsync();
         var seeder = scope.ServiceProvider.GetRequiredService<IIdentitySeeder>();
         await seeder.SeedAsync();
+
+        var demoSeeder = scope.ServiceProvider.GetRequiredService<ICatalogDemoSeeder>();
+        await demoSeeder.SeedAsync();
     }
 }
 
