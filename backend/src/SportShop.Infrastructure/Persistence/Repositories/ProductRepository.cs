@@ -286,4 +286,22 @@ public sealed class ProductRepository : IProductRepository
 
         return (items, totalCount);
     }
+
+    public async Task<bool> ReserveStockAtomicAsync(Guid variantId, int quantity, DateTime updatedAt, CancellationToken cancellationToken = default)
+    {
+        var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE product_variants SET stock_quantity = stock_quantity - {quantity}, updated_at = {updatedAt} WHERE id = {variantId} AND stock_quantity >= {quantity};",
+            cancellationToken);
+
+        return rowsAffected > 0;
+    }
+
+    public async Task<bool> RestoreStockAtomicAsync(Guid variantId, int quantity, DateTime updatedAt, CancellationToken cancellationToken = default)
+    {
+        var rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE product_variants SET stock_quantity = stock_quantity + {quantity}, updated_at = {updatedAt} WHERE id = {variantId};",
+            cancellationToken);
+
+        return rowsAffected > 0;
+    }
 }

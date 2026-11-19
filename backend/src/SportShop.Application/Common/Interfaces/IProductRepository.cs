@@ -29,6 +29,8 @@ public interface IProductRepository
     Task RemoveImageAsync(ProductImage image, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ProductVariant>> GetLowStockVariantsAsync(int threshold = 5, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<InventoryMovement>> GetVariantMovementsAsync(Guid variantId, CancellationToken cancellationToken = default);
+    Task<bool> ReserveStockAtomicAsync(Guid variantId, int quantity, DateTime updatedAt, CancellationToken cancellationToken = default);
+    Task<bool> RestoreStockAtomicAsync(Guid variantId, int quantity, DateTime updatedAt, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Product> Items, int TotalCount)> GetPublicProductsAsync(
         string? q = null,
         string? categorySlug = null,

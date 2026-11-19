@@ -107,6 +107,9 @@ public static class DependencyInjection
         services.AddScoped<Features.Addresses.DeleteAddress.DeleteAddressCommandHandler>();
         services.AddScoped<Features.Addresses.SetDefault.SetDefaultAddressCommandHandler>();
 
+        // Orders
+        services.AddScoped<Features.Orders.Checkout.CheckoutOrderCommandHandler>();
+
         return services;
     }
 }
