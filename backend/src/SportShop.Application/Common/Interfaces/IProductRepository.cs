@@ -27,4 +27,6 @@ public interface IProductRepository
     Task<IReadOnlyList<ProductImage>> GetProductImagesAsync(Guid productId, CancellationToken cancellationToken = default);
     Task AddImageAsync(ProductImage image, CancellationToken cancellationToken = default);
     Task RemoveImageAsync(ProductImage image, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ProductVariant>> GetLowStockVariantsAsync(int threshold = 5, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<InventoryMovement>> GetVariantMovementsAsync(Guid variantId, CancellationToken cancellationToken = default);
 }

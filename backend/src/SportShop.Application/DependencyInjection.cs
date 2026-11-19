@@ -77,6 +77,10 @@ public static class DependencyInjection
         services.AddScoped<Features.Catalog.Images.UploadImage.UploadProductImageCommandHandler>();
         services.AddScoped<Features.Catalog.Images.DeleteImage.DeleteProductImageCommandHandler>();
 
+        // Inventory
+        services.AddScoped<Features.Catalog.Inventory.AdjustStock.AdjustStockCommandHandler>();
+        services.AddScoped<Features.Catalog.Inventory.LowStock.GetLowStockVariantsQueryHandler>();
+
         return services;
     }
 }

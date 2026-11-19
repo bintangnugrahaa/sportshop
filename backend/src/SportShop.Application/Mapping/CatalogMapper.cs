@@ -1,6 +1,7 @@
 using Riok.Mapperly.Abstractions;
 using SportShop.Application.Features.Catalog.DTOs;
 using SportShop.Domain.Catalog;
+using SportShop.Domain.Inventory;
 
 namespace SportShop.Application.Mapping;
 
@@ -34,4 +35,9 @@ public static partial class CatalogMapper
     public static partial ProductImageDto ToDto(ProductImage image);
 
     public static partial List<ProductImageDto> ToImageDtoList(IEnumerable<ProductImage> images);
+
+    [MapperIgnoreSource(nameof(InventoryMovement.Variant))]
+    public static partial InventoryMovementDto ToDto(InventoryMovement movement);
+
+    public static partial List<InventoryMovementDto> ToMovementDtoList(IEnumerable<InventoryMovement> movements);
 }

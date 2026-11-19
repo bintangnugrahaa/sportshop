@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SportShop.Api.Extensions;
 using SportShop.Api.Models;
 using SportShop.Application.Features.Catalog.DTOs;
+using SportShop.Application.Features.Catalog.Inventory.AdjustStock;
 using SportShop.Application.Features.Catalog.Variants.DeleteVariant;
 using SportShop.Application.Features.Catalog.Variants.UpdateVariant;
 
@@ -16,13 +17,16 @@ public class AdminVariantsController : ControllerBase
 {
     private readonly UpdateVariantCommandHandler _updateHandler;
     private readonly DeleteVariantCommandHandler _deleteHandler;
+    private readonly AdjustStockCommandHandler _adjustStockHandler;
 
     public AdminVariantsController(
         UpdateVariantCommandHandler updateHandler,
-        DeleteVariantCommandHandler deleteHandler)
+        DeleteVariantCommandHandler deleteHandler,
+        AdjustStockCommandHandler adjustStockHandler)
     {
         _updateHandler = updateHandler;
         _deleteHandler = deleteHandler;
+        _adjustStockHandler = adjustStockHandler;
     }
 
     [HttpPut("{id:guid}")]
@@ -57,6 +61,20 @@ public class AdminVariantsController : ControllerBase
         var result = await _deleteHandler.HandleAsync(new DeleteVariantCommand(id), cancellationToken);
         return result.ToActionResult(HttpContext);
     }
+
+    [HttpPost("{id:guid}/stock-adjustments")]
+    [ProducesResponseType(typeof(InventoryMovementDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> AdjustStock(Guid id, [FromBody] AdjustStockRequest request, CancellationToken cancellationToken)
+    {
+        var command = new AdjustStockCommand(id, request.ChangeQuantity, request.Note);
+        var result = await _adjustStockHandler.HandleAsync(command, cancellationToken);
+        return result.ToActionResult(HttpContext);
+    }
 }
 
 public sealed record UpdateVariantRequest(
@@ -66,3 +84,7 @@ public sealed record UpdateVariantRequest(
     decimal Price,
     int WeightGram,
     bool IsActive = true);
+
+public sealed record AdjustStockRequest(
+    int ChangeQuantity,
+    string Note);

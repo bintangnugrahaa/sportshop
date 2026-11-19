@@ -178,4 +178,21 @@ public sealed class ProductRepository : IProductRepository
         _context.ProductImages.Remove(image);
         return Task.CompletedTask;
     }
+
+    public async Task<IReadOnlyList<ProductVariant>> GetLowStockVariantsAsync(int threshold = 5, CancellationToken cancellationToken = default)
+    {
+        return await _context.ProductVariants
+            .Include(v => v.Product)
+            .Where(v => v.IsActive && v.StockQuantity <= threshold)
+            .OrderBy(v => v.StockQuantity)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<InventoryMovement>> GetVariantMovementsAsync(Guid variantId, CancellationToken cancellationToken = default)
+    {
+        return await _context.InventoryMovements
+            .Where(m => m.VariantId == variantId)
+            .OrderByDescending(m => m.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }
