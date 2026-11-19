@@ -12,8 +12,8 @@ namespace SportShop.Api.IntegrationTests;
 
 public class JwtTokenServiceTests
 {
-    private static readonly string[] CustomerRoles = ["Customer"];
-    private static readonly string[] MultiRoles = ["Customer", "Admin"];
+    private static readonly string[] _customerRoles = ["Customer"];
+    private static readonly string[] _multiRoles = ["Customer", "Admin"];
 
     private readonly JwtOptions _options = new()
     {
@@ -43,7 +43,7 @@ public class JwtTokenServiceTests
         var fullName = "John Doe";
 
         // Act
-        var tokenString = sut.GenerateAccessToken(userId, email, fullName, MultiRoles);
+        var tokenString = sut.GenerateAccessToken(userId, email, fullName, _multiRoles);
 
         // Assert
         tokenString.Should().NotBeNullOrWhiteSpace();
@@ -88,7 +88,7 @@ public class JwtTokenServiceTests
         // Arrange
         var sut = CreateSut();
         var userId = Guid.NewGuid();
-        var tokenString = sut.GenerateAccessToken(userId, "test@example.com", "Test User", CustomerRoles);
+        var tokenString = sut.GenerateAccessToken(userId, "test@example.com", "Test User", _customerRoles);
 
         // Act
         var principal = sut.GetPrincipalFromToken(tokenString, validateLifetime: false);
@@ -104,7 +104,7 @@ public class JwtTokenServiceTests
         // Arrange
         var sut = CreateSut();
         var userId = Guid.NewGuid();
-        var tokenString = sut.GenerateAccessToken(userId, "test@example.com", "Test User", CustomerRoles);
+        var tokenString = sut.GenerateAccessToken(userId, "test@example.com", "Test User", _customerRoles);
         var tamperedToken = tokenString[..^5] + "abcde";
 
         // Act
