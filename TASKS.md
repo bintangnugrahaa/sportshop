@@ -66,7 +66,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T4-02 | Respons keranjang menandai item yang harga/stok berubah atau varian nonaktif | T4-01 | S | Test skenario |
 | [x] | T4-03 | Tabel `shipping_rates` + seed provinsi + `ShippingCalculator` (unit test aturan: min 1 kg, `ceil`) | T1-06 | M | Unit test rumus lulus, termasuk batas |
 | [x] | T4-04 | Admin kelola tarif ongkir + cache `ship:rates:v1` | T4-03 | S | Perubahan tarif tercermin segera |
-| [ ] | T4-05 | CRUD alamat (ownership, default tunggal, soft delete), `GET /shipping/provinces`, `POST /shipping/quote` | T4-03, T2-02 | M | Alamat orang lain → 404 |
+| [x] | T4-05 | CRUD alamat (ownership, default tunggal, soft delete), `GET /shipping/provinces`, `POST /shipping/quote` | T4-03, T2-02 | M | Alamat orang lain → 404 |
 
 ## Fase 5 — Pesanan & Stok (Inti Bisnis)
 

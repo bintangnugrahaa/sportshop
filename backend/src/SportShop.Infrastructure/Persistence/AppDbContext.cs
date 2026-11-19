@@ -5,6 +5,7 @@ using SportShop.Domain.Carts;
 using SportShop.Domain.Catalog;
 using SportShop.Domain.Inventory;
 using SportShop.Domain.Shipping;
+using SportShop.Domain.Users;
 using SportShop.Infrastructure.Identity;
 
 namespace SportShop.Infrastructure.Persistence;
@@ -26,6 +27,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<ShippingRate> ShippingRates => Set<ShippingRate>();
+    public DbSet<Address> Addresses => Set<Address>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

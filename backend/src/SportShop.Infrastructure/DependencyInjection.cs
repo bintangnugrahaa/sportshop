@@ -111,6 +111,7 @@ public static class DependencyInjection
         services.AddScoped<IProductRepository, Persistence.Repositories.ProductRepository>();
         services.AddScoped<ICartRepository, Persistence.Repositories.CartRepository>();
         services.AddScoped<IShippingRateRepository, Persistence.Repositories.ShippingRateRepository>();
+        services.AddScoped<IAddressRepository, Persistence.Repositories.AddressRepository>();
         services.AddScoped<IFileStorage, Storage.LocalFileStorage>();
 
         services.AddSingleton<IConnectionMultiplexer>(sp =>

@@ -97,6 +97,15 @@ public static class DependencyInjection
         services.AddScoped<Features.Shipping.GetRate.GetShippingRateQueryHandler>();
         services.AddScoped<Features.Shipping.GetActiveRates.GetActiveShippingRatesQueryHandler>();
         services.AddScoped<Features.Shipping.UpdateRate.UpdateShippingRateCommandHandler>();
+        services.AddScoped<Features.Shipping.GetQuote.GetShippingQuoteQueryHandler>();
+
+        // Addresses
+        services.AddScoped<Features.Addresses.ListAddresses.ListAddressesQueryHandler>();
+        services.AddScoped<Features.Addresses.GetAddress.GetAddressByIdQueryHandler>();
+        services.AddScoped<Features.Addresses.CreateAddress.CreateAddressCommandHandler>();
+        services.AddScoped<Features.Addresses.UpdateAddress.UpdateAddressCommandHandler>();
+        services.AddScoped<Features.Addresses.DeleteAddress.DeleteAddressCommandHandler>();
+        services.AddScoped<Features.Addresses.SetDefault.SetDefaultAddressCommandHandler>();
 
         return services;
     }
