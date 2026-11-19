@@ -249,7 +249,19 @@ public sealed class ProductRepository : IProductRepository
         if (!string.IsNullOrWhiteSpace(q))
         {
             var search = q.Trim();
-            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{search}%") || EF.Functions.ILike(p.Description, $"%{search}%"));
+            var ftsQuery = query.Where(p => EF.Property<NpgsqlTypes.NpgsqlTsVector>(p, "SearchVector")
+                .Matches(EF.Functions.WebSearchToTsQuery("simple", search)));
+
+            if (await ftsQuery.AnyAsync(cancellationToken))
+            {
+                query = ftsQuery;
+            }
+            else
+            {
+                // Fallback to trigram similarity if FTS has no match
+                query = query.Where(p => EF.Functions.TrigramsSimilarity(p.Name, search) > 0.2
+                    || EF.Functions.ILike(p.Name, $"%{search}%"));
+            }
         }
 
         var normalizedSort = sort?.Trim().ToLowerInvariant() ?? "newest";
