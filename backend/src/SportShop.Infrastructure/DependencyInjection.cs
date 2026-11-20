@@ -2,6 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
+using Polly.Timeout;
 using SportShop.Application.Common.Interfaces;
 using SportShop.Infrastructure.Caching;
 using SportShop.Infrastructure.Email;
@@ -114,7 +119,41 @@ public static class DependencyInjection
         services.AddScoped<IAddressRepository, Persistence.Repositories.AddressRepository>();
         services.AddScoped<IOrderRepository, Persistence.Repositories.OrderRepository>();
         services.AddScoped<IPaymentRepository, Persistence.Repositories.PaymentRepository>();
-        services.AddHttpClient<IPaymentGateway, Services.MidtransClient>();
+        services.AddHttpClient<IPaymentGateway, Services.MidtransClient>()
+            .AddResilienceHandler("midtrans-pipeline", (builder, context) =>
+            {
+                var midtransOptions = context.ServiceProvider
+                    .GetRequiredService<Microsoft.Extensions.Options.IOptions<MidtransOptions>>().Value;
+                var resilience = midtransOptions.Resilience;
+
+                builder.AddTimeout(TimeSpan.FromSeconds(resilience.TotalTimeoutSeconds));
+
+                builder.AddRetry(new HttpRetryStrategyOptions
+                {
+                    MaxRetryAttempts = resilience.MaxRetryAttempts,
+                    Delay = TimeSpan.FromMilliseconds(resilience.RetryInitialDelayMs),
+                    BackoffType = DelayBackoffType.Exponential,
+                    UseJitter = true,
+                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                        .Handle<HttpRequestException>()
+                        .Handle<TimeoutRejectedException>()
+                        .HandleResult(r => (int)r.StatusCode >= 500 || r.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
+                });
+
+                builder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+                {
+                    FailureRatio = resilience.CircuitBreakerFailureRatio,
+                    SamplingDuration = TimeSpan.FromSeconds(resilience.CircuitBreakerSamplingSeconds),
+                    MinimumThroughput = resilience.CircuitBreakerMinimumThroughput,
+                    BreakDuration = TimeSpan.FromSeconds(resilience.CircuitBreakerDurationSeconds),
+                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                        .Handle<HttpRequestException>()
+                        .Handle<TimeoutRejectedException>()
+                        .HandleResult(r => (int)r.StatusCode >= 500 || r.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
+                });
+
+                builder.AddTimeout(TimeSpan.FromSeconds(resilience.TimeoutSeconds));
+            });
         services.AddSingleton<IOrderNumberGenerator, Services.OrderNumberGenerator>();
         services.AddScoped<IFileStorage, Storage.LocalFileStorage>();
 
