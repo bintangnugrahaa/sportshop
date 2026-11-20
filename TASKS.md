@@ -109,7 +109,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T8-01 | Laporan cakupan; capai Domain ≥ 90%, Application ≥ 80% | F2–F7 | M | CI menampilkan cakupan |
 | [x] | T8-02 | Tinjauan keamanan sesuai `AGENTS.md` §9 (ownership, secret, header, log) + CodeQL | F2–F7 | M | Daftar temuan nol berkategori tinggi |
 | [x] | T8-03 | Uji beban ringan katalog (k6/NBomber, 100 RPS) & perbaiki query lambat | T3-08 | M | p95 < 300 ms (NFR-01) |
-| [ ] | T8-04 | Review indeks & `EXPLAIN` untuk query utama | T8-03 | S | Tidak ada seq scan pada tabel besar untuk query utama |
+| [x] | T8-04 | Review indeks & `EXPLAIN` untuk query utama | T8-03 | S | Tidak ada seq scan pada tabel besar untuk query utama |
 
 ## Fase 9 — Frontend: Fondasi, Auth, Katalog
 
