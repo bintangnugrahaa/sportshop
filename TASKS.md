@@ -91,7 +91,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T6-05 | `SendEmailJob` (Hangfire, retry) + template email transaksional (pesanan dibuat, dibayar, dikirim) memakai `IEmailSender` dari T2-06 | T2-06 | M | Email muncul di Mailpit; retry saat SMTP gagal |
 | [x] | T6-06 | `ReconcilePaymentsJob` untuk pembayaran `Pending` | T6-04, T1-09 | M | Webhook sengaja dilewatkan → status tetap tersinkron |
 | [x] | T6-07 | Hubungkan event pesanan (Paid/Shipped) ke email | T6-05, T6-04 | S | Email terkirim sekali per event |
-| [ ] | T6-08 | Uji end-to-end sandbox Midtrans (manual, didokumentasikan di README) | T6-04 | S | Checklist skenario sukses/expire/cancel terisi |
+| [x] | T6-08 | Uji end-to-end sandbox Midtrans (manual, didokumentasikan di README) | T6-04 | S | Checklist skenario sukses/expire/cancel terisi |
 
 ## Fase 7 — Dashboard Admin (Backend) & Penyempurnaan API
 
