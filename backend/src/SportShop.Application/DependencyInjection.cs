@@ -125,6 +125,9 @@ public static class DependencyInjection
         services.AddScoped<Features.Orders.Admin.CompleteOrder.CompleteOrderCommandHandler>();
         services.AddScoped<Features.Orders.Admin.CancelAdminOrder.CancelAdminOrderCommandHandler>();
 
+        // Admin Dashboard
+        services.AddScoped<Features.Admin.DashboardSummary.GetDashboardSummaryQueryHandler>();
+
         return services;
     }
 }

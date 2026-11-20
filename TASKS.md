@@ -97,7 +97,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 
 | ✓ | ID | Tugas | Dep | Ukuran | Kriteria penerimaan |
 |---|---|---|---|---|---|
-| [ ] | T7-01 | `GET /admin/dashboard/summary`: pesanan hari ini, omzet 7/30 hari, terlaris, stok menipis | T5-07 | M | Angka cocok dengan data seed di test |
+| [x] | T7-01 | `GET /admin/dashboard/summary`: pesanan hari ini, omzet 7/30 hari, terlaris, stok menipis | T5-07 | M | Angka cocok dengan data seed di test |
 | [ ] | T7-02 | Metrik kustom OpenTelemetry (orders_created, payments_settled, stock_conflicts) | T1-03, T6-04 | S | Muncul di backend metrik |
 | [ ] | T7-03 | Job `CleanupJob` (token kedaluwarsa, notifikasi lama) | T1-09 | S | Test job |
 | [ ] | T7-04 | Review Swagger: contoh, kode respons, deskripsi untuk seluruh endpoint | semua API | M | Tidak ada endpoint tanpa dokumentasi |
