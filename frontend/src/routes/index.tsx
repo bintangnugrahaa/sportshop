@@ -18,9 +18,10 @@ const CheckoutPage = React.lazy(() => import('@/features/checkout/pages/Checkout
 const PaymentStatusPage = React.lazy(
   () => import('@/features/checkout/pages/PaymentStatusPage')
 );
+const MyOrdersPage = React.lazy(() => import('@/features/orders/pages/MyOrdersPage'));
+const OrderDetailPage = React.lazy(() => import('@/features/orders/pages/OrderDetailPage'));
 
 // Placeholder components for future phases
-const MyOrdersPage = () => <div className="container mx-auto p-8">Pesanan Saya</div>;
 const ProfilePage = () => <div className="container mx-auto p-8">Profil Pengguna</div>;
 const AdminDashboard = () => <div className="container mx-auto p-8">Dashboard Admin</div>;
 const NotFoundPage = () => (
@@ -52,6 +53,7 @@ export const AppRoutes: React.FC = () => {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/checkout/status/:orderNumber" element={<PaymentStatusPage />} />
             <Route path="/akun/pesanan" element={<MyOrdersPage />} />
+            <Route path="/akun/pesanan/:orderNumber" element={<OrderDetailPage />} />
             <Route path="/akun/alamat" element={<AddressesPage />} />
             <Route path="/akun/profil" element={<ProfilePage />} />
           </Route>
