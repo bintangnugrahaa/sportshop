@@ -13,6 +13,7 @@ const RegisterPage = React.lazy(() => import('@/features/auth/pages/RegisterPage
 const ForgotPasswordPage = React.lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
 const ResetPasswordPage = React.lazy(() => import('@/features/auth/pages/ResetPasswordPage'));
 const CartPage = React.lazy(() => import('@/features/cart/pages/CartPage'));
+const AddressesPage = React.lazy(() => import('@/features/account/pages/AddressesPage'));
 
 // Placeholder components for future phases
 const CheckoutPage = () => <div className="container mx-auto p-8">Checkout</div>;
@@ -49,6 +50,7 @@ export const AppRoutes: React.FC = () => {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/checkout/status/:orderNumber" element={<PaymentStatusPage />} />
             <Route path="/akun/pesanan" element={<MyOrdersPage />} />
+            <Route path="/akun/alamat" element={<AddressesPage />} />
             <Route path="/akun/profil" element={<ProfilePage />} />
           </Route>
 

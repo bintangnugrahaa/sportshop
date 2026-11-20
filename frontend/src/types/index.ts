@@ -143,3 +143,63 @@ export type OrderStatus =
   | 'Completed'
   | 'Cancelled'
   | 'Expired';
+
+export interface Address {
+  id: string;
+  userId: string;
+  label: string;
+  recipientName: string;
+  phone: string;
+  provinceCode: string;
+  provinceName: string;
+  city: string;
+  district?: string | null;
+  postalCode: string;
+  street: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface CreateAddressInput {
+  label: string;
+  recipientName: string;
+  phone: string;
+  provinceCode: string;
+  city: string;
+  district?: string | null;
+  postalCode: string;
+  street: string;
+  isDefault: boolean;
+}
+
+export type UpdateAddressInput = CreateAddressInput;
+
+export interface ShippingRate {
+  provinceCode: string;
+  provinceName: string;
+  baseFee: number;
+  perKgFee: number;
+  estimatedDaysMin: number;
+  estimatedDaysMax: number;
+  isActive: boolean;
+  updatedAt?: string | null;
+}
+
+export interface ShippingQuote {
+  addressId: string;
+  recipientName: string;
+  provinceCode: string;
+  provinceName: string;
+  city: string;
+  postalCode: string;
+  totalWeightGram: number;
+  billableWeightKg: number;
+  baseFee: number;
+  perKgFee: number;
+  shippingFee: number;
+  estimatedDaysMin: number;
+  estimatedDaysMax: number;
+  cartSubtotal: number;
+  estimatedTotal: number;
+}
