@@ -117,7 +117,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 |---|---|---|---|---|---|
 | [x] | T9-01 | Layout, router, guard, provider (QueryClient, Toaster), theme token, komponen shared | T0-03 | M | Navigasi dan guard bekerja |
 | [x] | T9-02 | Axios instance + interceptor JWT + refresh antrean tunggal; `authStore` | T9-01, T2-04 | M | Test: banyak 401 serentak → hanya satu refresh |
-| [ ] | T9-03 | Halaman Masuk, Daftar, Lupa/Reset Password (RHF + Zod) | T9-02 | M | Error server tampil per field |
+| [x] | T9-03 | Halaman Masuk, Daftar, Lupa/Reset Password (RHF + Zod) | T9-02 | M | Error server tampil per field |
 | [ ] | T9-04 | Katalog: daftar, filter, sortir, paginasi, pencarian (state di URL query) | T9-01, T3-06 | L | Refresh halaman mempertahankan filter |
 | [ ] | T9-05 | Detail produk: galeri, `VariantSelector`, tambah ke keranjang | T9-04, T3-08 | M | Varian stok 0 nonaktif |
 | [ ] | T9-06 | Beranda (kategori unggulan, produk terbaru) | T9-04 | S | — |
