@@ -138,7 +138,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T10-10 | Admin: pesanan (filter, detail, ubah status, input resi) | T10-07, T5-07 | L | Aksi hanya muncul sesuai status |
 | [x] | T10-11 | Admin: tarif ongkir | T10-07, T4-04 | S | — |
 | [x] | T10-12 | Aksesibilitas & responsif: audit Lighthouse, keyboard, kontras; code splitting Admin | T10-10 | M | Accessibility ≥ 90 (NFR-09); bundle awal < 200 KB gzip |
-| [ ] | T10-13 | Test frontend: skema Zod, VariantSelector, form auth, interceptor | T9-02 | M | CI hijau |
+| [x] | T10-13 | Test frontend: skema Zod, VariantSelector, form auth, interceptor | T9-02 | M | CI hijau |
 
 ## Fase 11 — Rilis & Dokumentasi
 
