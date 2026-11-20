@@ -3,3 +3,4 @@ services:
   api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - SEED_DEMO_DATA=true
