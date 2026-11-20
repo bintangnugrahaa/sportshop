@@ -37,6 +37,12 @@ const AdminBrandsPage = React.lazy(
 const AdminStockPage = React.lazy(
   () => import('@/features/admin/inventory/pages/AdminStockPage')
 );
+const AdminOrdersPage = React.lazy(
+  () => import('@/features/admin/orders/pages/AdminOrdersPage')
+);
+const AdminOrderDetailPage = React.lazy(
+  () => import('@/features/admin/orders/pages/AdminOrderDetailPage')
+);
 
 // Placeholder components for future phases
 const NotFoundPage = () => (
@@ -86,6 +92,8 @@ export const AppRoutes: React.FC = () => {
             <Route path="/admin/kategori" element={<AdminCategoriesPage />} />
             <Route path="/admin/brand" element={<AdminBrandsPage />} />
             <Route path="/admin/stok" element={<AdminStockPage />} />
+            <Route path="/admin/pesanan" element={<AdminOrdersPage />} />
+            <Route path="/admin/pesanan/:orderNumber" element={<AdminOrderDetailPage />} />
           </Route>
         </Route>
 
