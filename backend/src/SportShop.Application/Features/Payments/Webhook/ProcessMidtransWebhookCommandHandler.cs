@@ -18,6 +18,7 @@ public sealed class ProcessMidtransWebhookCommandHandler
     private readonly IIdentityService _identityService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
+    private readonly ISportShopMetrics _metrics;
 
     public ProcessMidtransWebhookCommandHandler(
         IOrderRepository orderRepository,
@@ -27,7 +28,8 @@ public sealed class ProcessMidtransWebhookCommandHandler
         IOrderNotificationService notificationService,
         IIdentityService identityService,
         IUnitOfWork unitOfWork,
-        IClock clock)
+        IClock clock,
+        ISportShopMetrics metrics)
     {
         _orderRepository = orderRepository;
         _paymentRepository = paymentRepository;
@@ -37,6 +39,7 @@ public sealed class ProcessMidtransWebhookCommandHandler
         _identityService = identityService;
         _unitOfWork = unitOfWork;
         _clock = clock;
+        _metrics = metrics;
     }
 
     public async Task<Result<WebhookProcessResult>> HandleAsync(
@@ -258,6 +261,7 @@ public sealed class ProcessMidtransWebhookCommandHandler
 
             if (transitionedToPaid)
             {
+                _metrics.PaymentSettled();
                 var profileResult = await _identityService.GetUserProfileAsync(order.UserId, cancellationToken);
                 var email = profileResult.IsSuccess ? profileResult.Value.Email : "customer@sportshop.dev";
                 _notificationService.EnqueueOrderPaidEmail(email, order.ShippingAddress.RecipientName, order.OrderNumber, order.Total, now);

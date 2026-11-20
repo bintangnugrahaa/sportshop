@@ -25,6 +25,7 @@ public sealed class CheckoutOrderCommandHandler
     private readonly IOrderNumberGenerator _orderNumberGenerator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
+    private readonly ISportShopMetrics _metrics;
     private readonly IValidator<CheckoutOrderCommand> _validator;
 
     public CheckoutOrderCommandHandler(
@@ -40,6 +41,7 @@ public sealed class CheckoutOrderCommandHandler
         IOrderNumberGenerator orderNumberGenerator,
         IUnitOfWork unitOfWork,
         IClock clock,
+        ISportShopMetrics metrics,
         IValidator<CheckoutOrderCommand> validator)
     {
         _currentUser = currentUser;
@@ -54,6 +56,7 @@ public sealed class CheckoutOrderCommandHandler
         _orderNumberGenerator = orderNumberGenerator;
         _unitOfWork = unitOfWork;
         _clock = clock;
+        _metrics = metrics;
         _validator = validator;
     }
 
@@ -204,6 +207,7 @@ public sealed class CheckoutOrderCommandHandler
         }
         catch (StockReservationException ex)
         {
+            _metrics.StockConflict();
             return Result.Failure<OrderDto>(Error.Conflict("stock.insufficient", $"Stok varian {ex.Sku} tidak mencukupi."));
         }
         catch (Exception) when (!string.IsNullOrEmpty(idempotencyKey))
@@ -264,6 +268,8 @@ public sealed class CheckoutOrderCommandHandler
         var paymentStatus = snapResult is not null && snapResult.Success
             ? "pending"
             : "token_unavailable";
+
+        _metrics.OrderCreated();
 
         _notificationService.EnqueueOrderCreatedEmail(
             customerEmail,

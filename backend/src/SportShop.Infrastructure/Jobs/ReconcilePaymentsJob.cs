@@ -18,6 +18,7 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
     private readonly IIdentityService _identityService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
+    private readonly ISportShopMetrics _metrics;
     private readonly ILogger<ReconcilePaymentsJob> _logger;
 
     public ReconcilePaymentsJob(
@@ -29,6 +30,7 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
         IIdentityService identityService,
         IUnitOfWork unitOfWork,
         IClock clock,
+        ISportShopMetrics metrics,
         ILogger<ReconcilePaymentsJob> logger)
     {
         _paymentRepository = paymentRepository;
@@ -39,6 +41,7 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
         _identityService = identityService;
         _unitOfWork = unitOfWork;
         _clock = clock;
+        _metrics = metrics;
         _logger = logger;
     }
 
@@ -174,6 +177,7 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
 
                 if (transitionedToPaid)
                 {
+                    _metrics.PaymentSettled();
                     var profileResult = await _identityService.GetUserProfileAsync(order.UserId, cancellationToken);
                     var email = profileResult.IsSuccess ? profileResult.Value.Email : "customer@sportshop.dev";
                     _notificationService.EnqueueOrderPaidEmail(email, order.ShippingAddress.RecipientName, order.OrderNumber, order.Total, now);
