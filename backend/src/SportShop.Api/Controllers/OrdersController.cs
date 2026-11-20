@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SportShop.Api.Extensions;
 using SportShop.Api.Models;
 using SportShop.Application.Common;
@@ -46,6 +47,7 @@ public class OrdersController : ControllerBase
     /// Checkout keranjang belanja menjadi pesanan baru.
     /// </summary>
     [HttpPost("checkout")]
+    [EnableRateLimiting(RateLimitingExtensions.CheckoutPolicy)]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]

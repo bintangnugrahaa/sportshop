@@ -86,7 +86,7 @@ public sealed class PaymentApplicationTests
         var orderId = "SPT-20261120-0001";
         var statusCode = "200";
         var grossAmount = "100000.00";
-        var signature = MidtransSignatureVerifier.CalculateSignature(orderId, statusCode, grossAmount, ServerKey);
+        var signature = MidtransSignatureVerifier.CalculateSignature(orderId, statusCode, grossAmount, _serverKey);
 
         var payload = JsonSerializer.Serialize(new
         {
@@ -117,7 +117,7 @@ public sealed class PaymentApplicationTests
         var orderNumber = "SPT-20261120-0001";
         var statusCode = "200";
         var grossAmount = "100000.00";
-        var signature = MidtransSignatureVerifier.CalculateSignature(orderNumber, statusCode, grossAmount, ServerKey);
+        var signature = MidtransSignatureVerifier.CalculateSignature(orderNumber, statusCode, grossAmount, _serverKey);
 
         var payload = JsonSerializer.Serialize(new
         {
@@ -144,7 +144,7 @@ public sealed class PaymentApplicationTests
         var payment = new Payment(Guid.NewGuid(), order.Id, 100000m);
 
         identityService.Setup(i => i.GetUserProfileAsync(order.UserId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(new UserProfileResult(order.UserId, "budi@test.com", "Budi", "0812", Roles, DateTime.UtcNow)));
+            .ReturnsAsync(Result.Success(new UserProfileResult(order.UserId, "budi@test.com", "Budi", "0812", _roles, DateTime.UtcNow)));
 
         gateway.Setup(g => g.VerifySignature(orderNumber, statusCode, grossAmount, signature))
             .Returns(true);

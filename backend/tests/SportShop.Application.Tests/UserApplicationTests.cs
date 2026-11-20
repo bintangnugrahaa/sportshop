@@ -66,7 +66,7 @@ public sealed class UserApplicationTests
         var identityService = new Mock<IIdentityService>();
         var validator = new UpdateProfileCommandValidator();
         var userId = Guid.NewGuid();
-        var updatedProfile = new UserProfileResult(userId, "user@test.com", "New Name", "0812345678", Roles, DateTime.UtcNow);
+        var updatedProfile = new UserProfileResult(userId, "user@test.com", "New Name", "0812345678", _roles, DateTime.UtcNow);
 
         identityService.Setup(i => i.UpdateUserProfileAsync(userId, "New Name", "0812345678", It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(updatedProfile));

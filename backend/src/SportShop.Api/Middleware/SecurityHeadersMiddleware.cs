@@ -19,6 +19,8 @@ public sealed class SecurityHeadersMiddleware
         context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
         context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
         context.Response.Headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
+        context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+        context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none';";
 
         await _next(context);
     }
