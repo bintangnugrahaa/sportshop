@@ -17,7 +17,7 @@ public sealed partial class MidtransClient : IPaymentGateway
     private readonly MidtransOptions _options;
     private readonly ILogger<MidtransClient> _logger;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -76,7 +76,7 @@ public sealed partial class MidtransClient : IPaymentGateway
                 ItemDetails: items
             );
 
-            var jsonContent = JsonSerializer.Serialize(payload, JsonOptions);
+            var jsonContent = JsonSerializer.Serialize(payload, _jsonOptions);
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, SnapUrl)
             {
                 Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
@@ -88,7 +88,7 @@ public sealed partial class MidtransClient : IPaymentGateway
 
             if (response.IsSuccessStatusCode)
             {
-                var snapResponse = JsonSerializer.Deserialize<SnapCreateResponse>(responseContent, JsonOptions);
+                var snapResponse = JsonSerializer.Deserialize<SnapCreateResponse>(responseContent, _jsonOptions);
                 if (snapResponse is not null && !string.IsNullOrWhiteSpace(snapResponse.Token))
                 {
                     return new CreateSnapTransactionResult(
@@ -154,7 +154,7 @@ public sealed partial class MidtransClient : IPaymentGateway
             var statusMessage = root.TryGetProperty("status_message", out var sm) ? sm.GetString() ?? "" : "";
             var transactionId = root.TryGetProperty("transaction_id", out var ti) ? ti.GetString() ?? "" : "";
             var orderId = root.TryGetProperty("order_id", out var oi) ? oi.GetString() ?? orderNumber : orderNumber;
-            
+
             decimal grossAmount = 0;
             if (root.TryGetProperty("gross_amount", out var ga))
             {

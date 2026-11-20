@@ -136,7 +136,7 @@ public class MidtransResilienceTests
 
         // The next call should now fail fast because the circuit breaker is open!
         var act = async () => await client.GetPaymentStatusAsync("SPT-3");
-        
+
         // MidtransClient catches non-OperationCanceledException and logs / returns null,
         // or throws BrokenCircuitException if not handled.
         // Let's verify via the typed client's internal call or testing circuit breaker state:

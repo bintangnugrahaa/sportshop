@@ -221,4 +221,109 @@ public sealed class CartApplicationTests
         itemDto.StatusNote.Should().Contain("tidak aktif");
         dto.Subtotal.Should().Be(0);
     }
+
+    [Fact]
+    public async Task GetCart_ShouldReturnCartDto_WhenRequested()
+    {
+        var userId = Guid.NewGuid();
+        var cart = new Cart(Guid.NewGuid(), userId);
+        _cartRepoMock.Setup(c => c.GetOrCreateByUserIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cart);
+
+        var handler = new SportShop.Application.Features.Cart.GetCart.GetCartQueryHandler(_cartRepoMock.Object);
+        var result = await handler.HandleAsync(new SportShop.Application.Features.Cart.GetCart.GetCartQuery(userId));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.UserId.Should().Be(userId);
+    }
+
+    [Fact]
+    public async Task RemoveCartItem_ShouldReturnNotFound_WhenCartNull()
+    {
+        var userId = Guid.NewGuid();
+        _cartRepoMock.Setup(c => c.GetByUserIdAsync(userId, true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Cart?)null);
+
+        var handler = new RemoveCartItemCommandHandler(_cartRepoMock.Object, _uowMock.Object, _clockMock.Object);
+        var result = await handler.HandleAsync(new RemoveCartItemCommand(userId, Guid.NewGuid()));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Type.Should().Be(ErrorType.NotFound);
+    }
+
+    [Fact]
+    public async Task RemoveCartItem_ShouldRemoveItemAndSave_WhenItemExists()
+    {
+        var userId = Guid.NewGuid();
+        var cart = new Cart(Guid.NewGuid(), userId);
+        var variant = CreateTestVariant();
+        cart.AddItem(variant, 2, DateTime.UtcNow);
+
+        _cartRepoMock.Setup(c => c.GetByUserIdAsync(userId, true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cart);
+
+        var handler = new RemoveCartItemCommandHandler(_cartRepoMock.Object, _uowMock.Object, _clockMock.Object);
+        var result = await handler.HandleAsync(new RemoveCartItemCommand(userId, variant.Id));
+
+        result.IsSuccess.Should().BeTrue();
+        _cartRepoMock.Verify(c => c.RemoveItemAsync(It.IsAny<CartItem>(), It.IsAny<CancellationToken>()), Times.Once);
+        _uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateItem_ShouldReturnNotFound_WhenCartOrItemOrVariantMissing()
+    {
+        var userId = Guid.NewGuid();
+        var validator = new UpdateCartItemCommandValidator();
+        var handler = new UpdateCartItemCommandHandler(
+            _cartRepoMock.Object, _productRepoMock.Object, _uowMock.Object, _clockMock.Object, validator);
+
+        // Validation error
+        var valResult = await handler.HandleAsync(new UpdateCartItemCommand(userId, Guid.NewGuid(), -1));
+        valResult.IsFailure.Should().BeTrue();
+        valResult.Error.Type.Should().Be(ErrorType.Validation);
+
+        // Cart null
+        _cartRepoMock.Setup(c => c.GetByUserIdAsync(userId, true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Cart?)null);
+        var cartNullResult = await handler.HandleAsync(new UpdateCartItemCommand(userId, Guid.NewGuid(), 2));
+        cartNullResult.IsFailure.Should().BeTrue();
+
+        // Item missing in cart
+        var cart = new Cart(Guid.NewGuid(), userId);
+        _cartRepoMock.Setup(c => c.GetByUserIdAsync(userId, true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cart);
+        var itemMissingResult = await handler.HandleAsync(new UpdateCartItemCommand(userId, Guid.NewGuid(), 2));
+        itemMissingResult.IsFailure.Should().BeTrue();
+
+        // Variant not found
+        var variant = CreateTestVariant();
+        cart.AddItem(variant, 1, DateTime.UtcNow);
+        _productRepoMock.Setup(p => p.GetVariantByIdAsync(variant.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ProductVariant?)null);
+        var varNullResult = await handler.HandleAsync(new UpdateCartItemCommand(userId, variant.Id, 2));
+        varNullResult.IsFailure.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateItem_ShouldSucceed_WhenValid()
+    {
+        var userId = Guid.NewGuid();
+        var cart = new Cart(Guid.NewGuid(), userId);
+        var variant = CreateTestVariant(stock: 10);
+        cart.AddItem(variant, 1, DateTime.UtcNow);
+
+        _cartRepoMock.Setup(c => c.GetByUserIdAsync(userId, true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cart);
+        _productRepoMock.Setup(p => p.GetVariantByIdAsync(variant.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(variant);
+
+        var validator = new UpdateCartItemCommandValidator();
+        var handler = new UpdateCartItemCommandHandler(
+            _cartRepoMock.Object, _productRepoMock.Object, _uowMock.Object, _clockMock.Object, validator);
+
+        var result = await handler.HandleAsync(new UpdateCartItemCommand(userId, variant.Id, 3));
+        result.IsSuccess.Should().BeTrue();
+        _uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

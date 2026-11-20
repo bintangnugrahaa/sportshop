@@ -211,4 +211,48 @@ public sealed class AddressApplicationTests
         quote.CartSubtotal.Should().Be(1_000_000m); // 2 * 500,000
         quote.EstimatedTotal.Should().Be(1_020_000m);
     }
+
+    [Fact]
+    public async Task ListAddresses_ShouldReturnUserAddresses()
+    {
+        var userId = Guid.NewGuid();
+        var addresses = new List<Address> { CreateTestAddress(userId) };
+
+        _addressRepoMock.Setup(r => r.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(addresses);
+
+        var sut = new SportShop.Application.Features.Addresses.ListAddresses.ListAddressesQueryHandler(_addressRepoMock.Object);
+        var result = await sut.HandleAsync(new SportShop.Application.Features.Addresses.ListAddresses.ListAddressesQuery(userId));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task UpdateAddress_ShouldSucceed_WhenValid()
+    {
+        var userId = Guid.NewGuid();
+        var address = CreateTestAddress(userId);
+        var province = new ShippingRate("JB", "Jawa Barat", 12000m, 6000m, 1, 3);
+
+        _addressRepoMock.Setup(r => r.GetByIdAsync(address.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(address);
+        _shippingRateRepoMock.Setup(r => r.GetByProvinceCodeAsync("JB", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(province);
+
+        var sut = new UpdateAddressCommandHandler(
+            _addressRepoMock.Object,
+            _shippingRateRepoMock.Object,
+            _uowMock.Object,
+            _clockMock.Object,
+            new UpdateAddressCommandValidator());
+
+        var command = new UpdateAddressCommand(
+            userId, address.Id, "Kantor", "Budi", "0812345678", "JB", "Bandung", "Coblong", "40132", "Jl. Dago", false);
+
+        var result = await sut.HandleAsync(command);
+
+        result.IsSuccess.Should().BeTrue();
+        address.Label.Should().Be("Kantor");
+    }
 }
