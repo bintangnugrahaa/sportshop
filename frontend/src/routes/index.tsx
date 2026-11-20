@@ -25,6 +25,15 @@ const AdminLayout = React.lazy(() => import('@/app/layouts/AdminLayout'));
 const AdminDashboardPage = React.lazy(
   () => import('@/features/admin/dashboard/pages/AdminDashboardPage')
 );
+const AdminProductsPage = React.lazy(
+  () => import('@/features/admin/catalog/pages/AdminProductsPage')
+);
+const AdminCategoriesPage = React.lazy(
+  () => import('@/features/admin/catalog/pages/AdminCategoriesPage')
+);
+const AdminBrandsPage = React.lazy(
+  () => import('@/features/admin/catalog/pages/AdminBrandsPage')
+);
 
 // Placeholder components for future phases
 const NotFoundPage = () => (
@@ -70,6 +79,9 @@ export const AppRoutes: React.FC = () => {
         <Route element={<RequireAdmin />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/produk" element={<AdminProductsPage />} />
+            <Route path="/admin/kategori" element={<AdminCategoriesPage />} />
+            <Route path="/admin/brand" element={<AdminBrandsPage />} />
           </Route>
         </Route>
 
