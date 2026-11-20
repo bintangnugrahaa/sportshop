@@ -59,7 +59,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         {
             var testConfig = new Dictionary<string, string?>
             {
-                ["ConnectionStrings:Default"] = _postgreSqlContainer.GetConnectionString() + ";Maximum Pool Size=10;",
+                ["ConnectionStrings:Default"] = _postgreSqlContainer.GetConnectionString() + ";Maximum Pool Size=10;Timeout=60;Command Timeout=60;",
                 ["Redis:ConnectionString"] = _redisContainer.GetConnectionString()
             };
 
