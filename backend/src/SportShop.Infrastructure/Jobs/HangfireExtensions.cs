@@ -64,6 +64,7 @@ public static partial class HangfireExtensions
 
         services.AddTransient<ISampleJob, SampleJob>();
         services.AddScoped<Application.Common.Interfaces.IExpireUnpaidOrdersJob, ExpireUnpaidOrdersJob>();
+        services.AddScoped<Application.Common.Interfaces.ISendEmailJob, SendEmailJob>();
 
         return services;
     }
