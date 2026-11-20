@@ -1,5 +1,6 @@
 using SportShop.Application.Features.Orders.DTOs;
 using SportShop.Domain.Orders;
+using SportShop.Domain.Payments;
 
 namespace SportShop.Application.Mapping;
 
@@ -35,7 +36,23 @@ public static class OrderMappingExtensions
             history.Note,
             history.CreatedAt);
 
-    public static OrderDto ToDto(this Order order) =>
+    public static PaymentDto ToDto(this Payment payment) =>
+        new(
+            payment.Id,
+            payment.Status.ToString(),
+            payment.GrossAmount,
+            payment.SnapToken,
+            payment.SnapRedirectUrl,
+            payment.PaymentType,
+            payment.SettledAt,
+            payment.CreatedAt);
+
+    public static OrderDto ToDto(
+        this Order order,
+        Payment? payment = null,
+        string? snapToken = null,
+        string? snapRedirectUrl = null,
+        string? paymentStatus = null) =>
         new(
             order.Id,
             order.OrderNumber,
@@ -56,8 +73,12 @@ public static class OrderMappingExtensions
             order.CancelReason,
             order.CreatedAt,
             order.Items.Select(ToDto).ToList(),
-            order.StatusHistories.Select(ToDto).ToList());
+            order.StatusHistories.Select(ToDto).ToList(),
+            payment?.ToDto(),
+            snapToken ?? payment?.SnapToken,
+            snapRedirectUrl ?? payment?.SnapRedirectUrl,
+            paymentStatus ?? (payment != null ? payment.Status.ToString().ToLowerInvariant() : null));
 
     public static List<OrderDto> ToDtoList(this IEnumerable<Order> orders) =>
-        orders.Select(ToDto).ToList();
+        orders.Select(o => o.ToDto()).ToList();
 }

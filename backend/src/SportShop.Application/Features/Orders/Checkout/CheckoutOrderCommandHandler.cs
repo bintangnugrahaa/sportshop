@@ -6,6 +6,7 @@ using SportShop.Application.Mapping;
 using SportShop.Domain.Catalog;
 using SportShop.Domain.Inventory;
 using SportShop.Domain.Orders;
+using SportShop.Domain.Payments;
 using SportShop.Domain.Shipping;
 
 namespace SportShop.Application.Features.Orders.Checkout;
@@ -18,6 +19,8 @@ public sealed class CheckoutOrderCommandHandler
     private readonly IShippingRateRepository _shippingRateRepository;
     private readonly IProductRepository _productRepository;
     private readonly IOrderRepository _orderRepository;
+    private readonly IPaymentRepository _paymentRepository;
+    private readonly IPaymentGateway _paymentGateway;
     private readonly IOrderNumberGenerator _orderNumberGenerator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
@@ -30,6 +33,8 @@ public sealed class CheckoutOrderCommandHandler
         IShippingRateRepository shippingRateRepository,
         IProductRepository productRepository,
         IOrderRepository orderRepository,
+        IPaymentRepository paymentRepository,
+        IPaymentGateway paymentGateway,
         IOrderNumberGenerator orderNumberGenerator,
         IUnitOfWork unitOfWork,
         IClock clock,
@@ -41,6 +46,8 @@ public sealed class CheckoutOrderCommandHandler
         _shippingRateRepository = shippingRateRepository;
         _productRepository = productRepository;
         _orderRepository = orderRepository;
+        _paymentRepository = paymentRepository;
+        _paymentGateway = paymentGateway;
         _orderNumberGenerator = orderNumberGenerator;
         _unitOfWork = unitOfWork;
         _clock = clock;
@@ -72,7 +79,8 @@ public sealed class CheckoutOrderCommandHandler
             var existingOrder = await _orderRepository.GetByIdempotencyKeyAsync(userId, idempotencyKey, cancellationToken);
             if (existingOrder is not null)
             {
-                return Result.Success(existingOrder.ToDto());
+                var existingPayment = await _paymentRepository.GetActivePaymentByOrderIdAsync(existingOrder.Id, cancellationToken);
+                return Result.Success(existingOrder.ToDto(existingPayment));
             }
         }
 
@@ -200,12 +208,65 @@ public sealed class CheckoutOrderCommandHandler
             var existingOrder = await _orderRepository.GetByIdempotencyKeyAsync(userId, idempotencyKey, cancellationToken);
             if (existingOrder is not null)
             {
-                return Result.Success(existingOrder.ToDto());
+                var existingPayment = await _paymentRepository.GetActivePaymentByOrderIdAsync(existingOrder.Id, cancellationToken);
+                return Result.Success(existingOrder.ToDto(existingPayment));
             }
             throw;
         }
 
-        return Result.Success(createdOrder!.ToDto());
+        CreateSnapTransactionResult? snapResult = null;
+        Payment? payment = null;
+
+        try
+        {
+            var snapItems = createdOrder!.Items.Select(i => new SnapItemDto(
+                i.VariantId.ToString(),
+                i.ProductName,
+                i.UnitPrice,
+                i.Quantity
+            )).ToList();
+            snapItems.Add(new SnapItemDto("shipping", "Biaya Pengiriman", createdOrder.ShippingFee, 1));
+
+            var customerEmail = _currentUser.Email ?? "customer@sportshop.dev";
+            var snapRequest = new CreateSnapTransactionRequest(
+                OrderNumber: createdOrder.OrderNumber,
+                GrossAmount: createdOrder.Total,
+                CustomerName: createdOrder.ShippingAddress.RecipientName,
+                CustomerEmail: customerEmail,
+                CustomerPhone: createdOrder.ShippingAddress.Phone,
+                Items: snapItems);
+
+            snapResult = await _paymentGateway.CreateSnapTransactionAsync(snapRequest, cancellationToken);
+
+            if (snapResult.Success && !string.IsNullOrWhiteSpace(snapResult.Token))
+            {
+                payment = new Payment(
+                    Guid.NewGuid(),
+                    createdOrder.Id,
+                    createdOrder.Total,
+                    snapResult.Token,
+                    snapResult.RedirectUrl,
+                    "Midtrans",
+                    now);
+
+                await _paymentRepository.AddAsync(payment, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+        }
+        catch (Exception)
+        {
+            // Token tak tersedia != pesanan hilang. Pesanan tetap PendingPayment.
+        }
+
+        var paymentStatus = snapResult is not null && snapResult.Success
+            ? "pending"
+            : "token_unavailable";
+
+        return Result.Success(createdOrder!.ToDto(
+            payment: payment,
+            snapToken: snapResult?.Token,
+            snapRedirectUrl: snapResult?.RedirectUrl,
+            paymentStatus: paymentStatus));
     }
 
     private sealed class StockReservationException : Exception

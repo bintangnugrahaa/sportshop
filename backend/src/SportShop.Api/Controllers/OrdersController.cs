@@ -9,6 +9,7 @@ using SportShop.Application.Features.Orders.Checkout;
 using SportShop.Application.Features.Orders.DTOs;
 using SportShop.Application.Features.Orders.GetCustomerOrder;
 using SportShop.Application.Features.Orders.ListCustomerOrders;
+using SportShop.Application.Features.Orders.PayOrder;
 using SportShop.Domain.Orders;
 
 namespace SportShop.Api.Controllers;
@@ -22,17 +23,20 @@ public class OrdersController : ControllerBase
     private readonly ListCustomerOrdersQueryHandler _listOrdersHandler;
     private readonly GetCustomerOrderByNumberQueryHandler _getOrderHandler;
     private readonly CancelCustomerOrderCommandHandler _cancelOrderHandler;
+    private readonly PayOrderCommandHandler _payOrderHandler;
 
     public OrdersController(
         CheckoutOrderCommandHandler checkoutHandler,
         ListCustomerOrdersQueryHandler listOrdersHandler,
         GetCustomerOrderByNumberQueryHandler getOrderHandler,
-        CancelCustomerOrderCommandHandler cancelOrderHandler)
+        CancelCustomerOrderCommandHandler cancelOrderHandler,
+        PayOrderCommandHandler payOrderHandler)
     {
         _checkoutHandler = checkoutHandler;
         _listOrdersHandler = listOrdersHandler;
         _getOrderHandler = getOrderHandler;
         _cancelOrderHandler = cancelOrderHandler;
+        _payOrderHandler = payOrderHandler;
     }
 
     public sealed record CheckoutRequest(Guid AddressId);
@@ -114,6 +118,24 @@ public class OrdersController : ControllerBase
     {
         var command = new CancelCustomerOrderCommand(orderNumber, request?.Reason);
         var result = await _cancelOrderHandler.HandleAsync(command, cancellationToken);
+        return result.ToActionResult(HttpContext);
+    }
+
+    /// <summary>
+    /// Melanjutkan pembayaran pesanan atau membuat ulang token Snap Midtrans.
+    /// </summary>
+    [HttpPost("{orderNumber}/pay")]
+    [ProducesResponseType(typeof(PayOrderResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> PayOrder(
+        [FromRoute] string orderNumber,
+        CancellationToken cancellationToken)
+    {
+        var command = new PayOrderCommand(orderNumber);
+        var result = await _payOrderHandler.HandleAsync(command, cancellationToken);
         return result.ToActionResult(HttpContext);
     }
 }

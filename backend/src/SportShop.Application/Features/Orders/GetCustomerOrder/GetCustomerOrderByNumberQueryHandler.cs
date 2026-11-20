@@ -10,15 +10,18 @@ public sealed class GetCustomerOrderByNumberQueryHandler
 {
     private readonly ICurrentUser _currentUser;
     private readonly IOrderRepository _orderRepository;
+    private readonly IPaymentRepository _paymentRepository;
     private readonly IValidator<GetCustomerOrderByNumberQuery> _validator;
 
     public GetCustomerOrderByNumberQueryHandler(
         ICurrentUser currentUser,
         IOrderRepository orderRepository,
+        IPaymentRepository paymentRepository,
         IValidator<GetCustomerOrderByNumberQuery> validator)
     {
         _currentUser = currentUser;
         _orderRepository = orderRepository;
+        _paymentRepository = paymentRepository;
         _validator = validator;
     }
 
@@ -47,6 +50,7 @@ public sealed class GetCustomerOrderByNumberQueryHandler
             return Result.Failure<OrderDto>(Error.NotFound("order.not_found", "Pesanan tidak ditemukan."));
         }
 
-        return Result.Success(order.ToDto());
+        var payment = await _paymentRepository.GetByOrderIdAsync(order.Id, cancellationToken);
+        return Result.Success(order.ToDto(payment));
     }
 }

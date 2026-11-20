@@ -27,6 +27,16 @@ public sealed record OrderStatusHistoryDto(
     string? Note,
     DateTime CreatedAt);
 
+public sealed record PaymentDto(
+    Guid Id,
+    string Status,
+    decimal GrossAmount,
+    string? SnapToken,
+    string? SnapRedirectUrl,
+    string? PaymentType,
+    DateTime? SettledAt,
+    DateTime CreatedAt);
+
 public sealed record OrderDto(
     Guid Id,
     string OrderNumber,
@@ -47,4 +57,8 @@ public sealed record OrderDto(
     string? CancelReason,
     DateTime CreatedAt,
     IReadOnlyList<OrderItemDto> Items,
-    IReadOnlyList<OrderStatusHistoryDto> StatusHistories);
+    IReadOnlyList<OrderStatusHistoryDto> StatusHistories,
+    PaymentDto? Payment = null,
+    string? SnapToken = null,
+    string? SnapRedirectUrl = null,
+    string? PaymentStatus = null);
