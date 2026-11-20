@@ -203,3 +203,78 @@ export interface ShippingQuote {
   cartSubtotal: number;
   estimatedTotal: number;
 }
+
+export interface OrderShippingAddress {
+  recipientName: string;
+  phone: string;
+  provinceCode: string;
+  provinceName: string;
+  city: string;
+  postalCode: string;
+  street: string;
+}
+
+export interface OrderItem {
+  id: string;
+  variantId: string;
+  productName: string;
+  variantLabel: string;
+  sku: string;
+  imageUrl?: string | null;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+}
+
+export interface OrderStatusHistory {
+  id: string;
+  fromStatus?: string | null;
+  toStatus: string;
+  note?: string | null;
+  createdAt: string;
+}
+
+export interface Payment {
+  id: string;
+  status: string;
+  grossAmount: number;
+  snapToken?: string | null;
+  snapRedirectUrl?: string | null;
+  paymentType?: string | null;
+  settledAt?: string | null;
+  createdAt: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  status: OrderStatus;
+  subtotal: number;
+  shippingFee: number;
+  total: number;
+  shippingAddress: OrderShippingAddress;
+  totalWeightGram: number;
+  courier?: string | null;
+  trackingNumber?: string | null;
+  expiresAt: string;
+  paidAt?: string | null;
+  shippedAt?: string | null;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
+  cancelReason?: string | null;
+  createdAt: string;
+  items: OrderItem[];
+  statusHistories: OrderStatusHistory[];
+  payment?: Payment | null;
+  snapToken?: string | null;
+  snapRedirectUrl?: string | null;
+  paymentStatus?: string | null;
+}
+
+export interface PayOrderResponse {
+  orderNumber: string;
+  snapToken?: string | null;
+  snapRedirectUrl?: string | null;
+  paymentStatus: string;
+}
