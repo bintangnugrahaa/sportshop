@@ -33,6 +33,12 @@ public record PaymentStatusResult(
 
 public interface IPaymentGateway
 {
+    bool VerifySignature(
+        string orderId,
+        string statusCode,
+        string grossAmount,
+        string signatureKey);
+
     Task<CreateSnapTransactionResult> CreateSnapTransactionAsync(
         CreateSnapTransactionRequest request,
         CancellationToken cancellationToken = default);

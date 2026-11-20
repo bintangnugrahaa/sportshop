@@ -49,6 +49,12 @@ public sealed partial class MidtransClient : IPaymentGateway
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
+    public bool VerifySignature(string orderId, string statusCode, string grossAmount, string signatureKey)
+    {
+        return SportShop.Application.Features.Payments.Webhook.MidtransSignatureVerifier.Verify(
+            orderId, statusCode, grossAmount, _options.ServerKey, signatureKey);
+    }
+
     public async Task<CreateSnapTransactionResult> CreateSnapTransactionAsync(
         CreateSnapTransactionRequest request,
         CancellationToken cancellationToken = default)

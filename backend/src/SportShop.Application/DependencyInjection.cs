@@ -114,6 +114,9 @@ public static class DependencyInjection
         services.AddScoped<Features.Orders.CancelOrder.CancelCustomerOrderCommandHandler>();
         services.AddScoped<Features.Orders.PayOrder.PayOrderCommandHandler>();
 
+        // Payments
+        services.AddScoped<Features.Payments.Webhook.ProcessMidtransWebhookCommandHandler>();
+
         // Admin Orders
         services.AddScoped<Features.Orders.Admin.ListAdminOrders.ListAdminOrdersQueryHandler>();
         services.AddScoped<Features.Orders.Admin.GetAdminOrder.GetAdminOrderByNumberQueryHandler>();

@@ -74,6 +74,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
                 services.Remove(descriptor);
             }
 
+            MockPaymentGateway.Setup(g => g.VerifySignature(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string orderId, string statusCode, string grossAmount, string sig) =>
+                    SportShop.Application.Features.Payments.Webhook.MidtransSignatureVerifier.Verify(orderId, statusCode, grossAmount, "SB-Mid-server-placeholder", sig));
+
             MockPaymentGateway.Setup(g => g.CreateSnapTransactionAsync(It.IsAny<CreateSnapTransactionRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((CreateSnapTransactionRequest req, CancellationToken _) =>
                     new CreateSnapTransactionResult(true, $"snap-token-{req.OrderNumber}", $"https://app.sandbox.midtrans.com/snap/v2/vtweb/snap-token-{req.OrderNumber}"));
