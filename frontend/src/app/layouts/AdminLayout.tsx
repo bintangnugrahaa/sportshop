@@ -38,6 +38,12 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col antialiased">
+      <a
+        href="#admin-main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Lewati ke konten utama admin
+      </a>
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur h-16 flex items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4">
@@ -169,7 +175,7 @@ export const AdminLayout: React.FC = () => {
         )}
 
         {/* Content Outlet */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main id="admin-main-content" className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto" tabIndex={-1}>
           <Outlet />
         </main>
       </div>
