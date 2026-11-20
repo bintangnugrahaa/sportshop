@@ -50,5 +50,130 @@ export function useAddToCart() {
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['cart'], updatedCart);
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+  });
+}
+
+export function useUpdateCartItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ variantId, quantity }: { variantId: string; quantity: number }) =>
+      cartApi.updateItem(variantId, quantity),
+    onMutate: async ({ variantId, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] });
+      const previousCart = queryClient.getQueryData<Cart>(['cart']);
+
+      if (previousCart) {
+        const updatedItems = previousCart.items.map((item) => {
+          if (item.variantId === variantId) {
+            const lineTotal = item.unitPrice * quantity;
+            const totalWeightGram = item.weightGram * quantity;
+            return {
+              ...item,
+              quantity,
+              lineTotal,
+              totalWeightGram,
+            };
+          }
+          return item;
+        });
+
+        const newSubtotal = updatedItems.reduce((acc, i) => acc + i.lineTotal, 0);
+        const newTotalItems = updatedItems.reduce((acc, i) => acc + i.quantity, 0);
+        const newTotalWeight = updatedItems.reduce((acc, i) => acc + i.totalWeightGram, 0);
+
+        queryClient.setQueryData<Cart>(['cart'], {
+          ...previousCart,
+          items: updatedItems,
+          subtotal: newSubtotal,
+          totalItems: newTotalItems,
+          totalWeightGram: newTotalWeight,
+        });
+      }
+
+      return { previousCart };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+  });
+}
+
+export function useRemoveCartItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (variantId: string) => cartApi.removeItem(variantId),
+    onMutate: async (variantId) => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] });
+      const previousCart = queryClient.getQueryData<Cart>(['cart']);
+
+      if (previousCart) {
+        const updatedItems = previousCart.items.filter((item) => item.variantId !== variantId);
+        const newSubtotal = updatedItems.reduce((acc, i) => acc + i.lineTotal, 0);
+        const newTotalItems = updatedItems.reduce((acc, i) => acc + i.quantity, 0);
+        const newTotalWeight = updatedItems.reduce((acc, i) => acc + i.totalWeightGram, 0);
+        const hasIssues = updatedItems.some(
+          (i) => i.isPriceChanged || i.isStockInsufficient || !i.isAvailable
+        );
+
+        queryClient.setQueryData<Cart>(['cart'], {
+          ...previousCart,
+          items: updatedItems,
+          subtotal: newSubtotal,
+          totalItems: newTotalItems,
+          totalWeightGram: newTotalWeight,
+          hasIssues,
+        });
+      }
+
+      return { previousCart };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+  });
+}
+
+export function useClearCart() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => cartApi.clearCart(),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['cart'] });
+      const previousCart = queryClient.getQueryData<Cart>(['cart']);
+
+      if (previousCart) {
+        queryClient.setQueryData<Cart>(['cart'], {
+          ...previousCart,
+          items: [],
+          subtotal: 0,
+          totalItems: 0,
+          totalWeightGram: 0,
+          hasIssues: false,
+        });
+      }
+
+      return { previousCart };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousCart) {
+        queryClient.setQueryData(['cart'], context.previousCart);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
   });
 }

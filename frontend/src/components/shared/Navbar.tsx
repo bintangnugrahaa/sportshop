@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Search, User as UserIcon, Menu, X, LogOut, ShieldCheck, Package } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
+import { useCart } from '@/features/cart/api';
 import { Button } from '@/components/ui/button';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUiStore();
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, openCartDrawer } = useUiStore();
+  const { data: cart } = useCart(isAuthenticated);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
 
@@ -86,13 +88,25 @@ export const Navbar: React.FC = () => {
         {/* Action icons */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Cart button */}
-          <Link
-            to="/keranjang"
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent transition-colors"
+          <button
+            type="button"
+            onClick={() => {
+              if (isAuthenticated) {
+                openCartDrawer();
+              } else {
+                navigate('/keranjang');
+              }
+            }}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent transition-colors cursor-pointer"
             aria-label="Keranjang Belanja"
           >
             <ShoppingBag className="h-4 w-4" />
-          </Link>
+            {cart && cart.totalItems > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                {cart.totalItems > 99 ? '99+' : cart.totalItems}
+              </span>
+            )}
+          </button>
 
           {/* User Account / Auth */}
           {isAuthenticated && user ? (

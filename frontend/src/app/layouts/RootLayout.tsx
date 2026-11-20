@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '@/components/shared/Navbar';
 import { Footer } from '@/components/shared/Footer';
+import { CartDrawer } from '@/features/cart/components/CartDrawer';
 
 export const RootLayout: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ export const RootLayout: React.FC = () => {
       <main className="flex-1">
         <Outlet />
       </main>
+      <CartDrawer />
       <Footer />
     </div>
   );
