@@ -48,6 +48,7 @@ public sealed class PaymentRepository : IPaymentRepository
     {
         return await _dbContext.Payments
             .Include(p => p.Order)
+                .ThenInclude(o => o!.Items)
             .Where(p => p.Status == PaymentStatus.Pending && p.CreatedAt <= threshold)
             .OrderBy(p => p.CreatedAt)
             .Take(limit)

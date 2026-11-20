@@ -65,6 +65,7 @@ public static partial class HangfireExtensions
         services.AddTransient<ISampleJob, SampleJob>();
         services.AddScoped<Application.Common.Interfaces.IExpireUnpaidOrdersJob, ExpireUnpaidOrdersJob>();
         services.AddScoped<Application.Common.Interfaces.ISendEmailJob, SendEmailJob>();
+        services.AddScoped<Application.Common.Interfaces.IReconcilePaymentsJob, ReconcilePaymentsJob>();
 
         return services;
     }
@@ -113,6 +114,11 @@ public static partial class HangfireExtensions
                 "expire-unpaid-orders",
                 job => job.ExecuteAsync(CancellationToken.None),
                 "*/5 * * * *");
+
+            recurringJobManager?.AddOrUpdate<Application.Common.Interfaces.IReconcilePaymentsJob>(
+                "reconcile-payments",
+                job => job.ExecuteAsync(CancellationToken.None),
+                "*/10 * * * *");
         }
         catch (Exception)
         {
