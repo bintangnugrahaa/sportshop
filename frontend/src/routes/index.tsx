@@ -21,9 +21,12 @@ const PaymentStatusPage = React.lazy(
 const MyOrdersPage = React.lazy(() => import('@/features/orders/pages/MyOrdersPage'));
 const OrderDetailPage = React.lazy(() => import('@/features/orders/pages/OrderDetailPage'));
 const ProfilePage = React.lazy(() => import('@/features/account/pages/ProfilePage'));
+const AdminLayout = React.lazy(() => import('@/app/layouts/AdminLayout'));
+const AdminDashboardPage = React.lazy(
+  () => import('@/features/admin/dashboard/pages/AdminDashboardPage')
+);
 
 // Placeholder components for future phases
-const AdminDashboard = () => <div className="container mx-auto p-8">Dashboard Admin</div>;
 const NotFoundPage = () => (
   <div className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center text-center">
     <h1 className="text-4xl font-extrabold text-primary">404</h1>
@@ -58,14 +61,16 @@ export const AppRoutes: React.FC = () => {
             <Route path="/akun/profil" element={<ProfilePage />} />
           </Route>
 
-          {/* Admin Routes */}
-          <Route element={<RequireAdmin />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-          </Route>
-
           {/* 404 */}
           <Route path="/404" element={<NotFoundPage />} />
           <Route path="*" element={<Navigate to="/404" replace />} />
+        </Route>
+
+        {/* Admin Routes */}
+        <Route element={<RequireAdmin />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+          </Route>
         </Route>
 
         {/* Guest Auth Layout */}
