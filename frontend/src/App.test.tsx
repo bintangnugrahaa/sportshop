@@ -3,8 +3,9 @@ import { describe, expect, it } from 'vitest';
 import App from './App';
 
 describe('App', () => {
-  it('renders SportShop brand title', () => {
+  it('renders SportShop brand title', async () => {
     render(<App />);
-    expect(screen.getByText('SportShop')).toBeInTheDocument();
+    const brandElements = await screen.findAllByText('SportShop');
+    expect(brandElements.length).toBeGreaterThanOrEqual(1);
   });
 });
