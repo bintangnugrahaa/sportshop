@@ -131,7 +131,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T10-03 | Checkout: pilih alamat, ringkasan + ongkir, buat pesanan, buka Snap | T10-01, T10-02, T6-03 | L | Klik ganda tidak membuat pesanan ganda |
 | [x] | T10-04 | Halaman status pembayaran (polling) + "Bayar Sekarang" ulang | T10-03 | M | Status berubah otomatis setelah webhook |
 | [x] | T10-05 | Pesanan Saya: daftar, detail, timeline, batal | T10-04, T5-05 | M | — |
-| [ ] | T10-06 | Profil & ganti password | T9-03, T2-05 | S | — |
+| [x] | T10-06 | Profil & ganti password | T9-03, T2-05 | S | — |
 | [ ] | T10-07 | Admin: kerangka layout + dashboard | T9-01, T7-01 | M | Hanya role Admin |
 | [ ] | T10-08 | Admin: produk, varian, gambar, kategori, brand | T10-07, T3-04 | L | Upload & validasi bekerja |
 | [ ] | T10-09 | Admin: stok & penyesuaian, daftar stok menipis | T10-07, T3-05 | M | — |

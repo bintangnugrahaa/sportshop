@@ -20,9 +20,9 @@ const PaymentStatusPage = React.lazy(
 );
 const MyOrdersPage = React.lazy(() => import('@/features/orders/pages/MyOrdersPage'));
 const OrderDetailPage = React.lazy(() => import('@/features/orders/pages/OrderDetailPage'));
+const ProfilePage = React.lazy(() => import('@/features/account/pages/ProfilePage'));
 
 // Placeholder components for future phases
-const ProfilePage = () => <div className="container mx-auto p-8">Profil Pengguna</div>;
 const AdminDashboard = () => <div className="container mx-auto p-8">Dashboard Admin</div>;
 const NotFoundPage = () => (
   <div className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center text-center">
