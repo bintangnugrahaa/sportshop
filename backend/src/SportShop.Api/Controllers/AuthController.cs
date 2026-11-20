@@ -47,6 +47,9 @@ public class AuthController : ControllerBase
         _confirmEmailHandler = confirmEmailHandler;
     }
 
+    /// <summary>
+    /// Registrasi akun pelanggan baru.
+    /// </summary>
     [HttpPost("register")]
     [ProducesResponseType(typeof(RegisterResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -62,6 +65,9 @@ public class AuthController : ControllerBase
         return CreatedAtAction(nameof(Register), new { id = result.Value.Id }, result.Value);
     }
 
+    /// <summary>
+    /// Masuk (login) dengan email dan password untuk mendapatkan access token JWT dan refresh token cookie.
+    /// </summary>
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -79,6 +85,9 @@ public class AuthController : ControllerBase
         return Ok(new LoginResponse(result.Value.AccessToken, result.Value.ExpiresIn));
     }
 
+    /// <summary>
+    /// Memperbarui access token menggunakan refresh token (rotasi refresh token).
+    /// </summary>
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -102,6 +111,9 @@ public class AuthController : ControllerBase
         return Ok(new RefreshTokenResponse(result.Value.AccessToken, result.Value.ExpiresIn));
     }
 
+    /// <summary>
+    /// Keluar (logout) dan mencabut refresh token aktif.
+    /// </summary>
     [Authorize]
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -119,6 +131,9 @@ public class AuthController : ControllerBase
         return Ok(new { Message = "Logout berhasil." });
     }
 
+    /// <summary>
+    /// Mengirim tautan/token reset kata sandi ke email pengguna.
+    /// </summary>
     [HttpPost("forgot-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -133,6 +148,9 @@ public class AuthController : ControllerBase
         return Ok(new { Message = "Jika email terdaftar, instruksi reset kata sandi telah dikirim ke alamat email Anda." });
     }
 
+    /// <summary>
+    /// Mengatur ulang kata sandi akun menggunakan token reset.
+    /// </summary>
     [HttpPost("reset-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -147,6 +165,9 @@ public class AuthController : ControllerBase
         return Ok(new { Message = "Kata sandi berhasil direset. Silakan masuk dengan kata sandi baru Anda." });
     }
 
+    /// <summary>
+    /// Mengonfirmasi alamat email pendaftaran akun menggunakan token konfirmasi.
+    /// </summary>
     [HttpPost("confirm-email")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]

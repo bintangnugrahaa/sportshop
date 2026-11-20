@@ -20,6 +20,9 @@ public class AdminInventoryController : ControllerBase
         _lowStockHandler = lowStockHandler;
     }
 
+    /// <summary>
+    /// Mengambil daftar varian produk dengan stok menipis (di bawah atau sama dengan batas threshold) (Admin).
+    /// </summary>
     [HttpGet("low-stock")]
     [ProducesResponseType(typeof(List<LowStockVariantDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]

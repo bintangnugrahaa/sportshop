@@ -42,6 +42,15 @@ public static class SwaggerExtensions
                     Array.Empty<string>()
                 }
             });
+
+            options.OperationFilter<SwaggerExamplesOperationFilter>();
+
+            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (System.IO.File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath);
+            }
         });
 
         return services;

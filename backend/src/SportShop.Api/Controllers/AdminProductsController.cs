@@ -48,6 +48,9 @@ public class AdminProductsController : ControllerBase
         _deleteImageHandler = deleteImageHandler;
     }
 
+    /// <summary>
+    /// Mengambil daftar produk terpaginasi untuk panel admin.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<ProductDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -66,6 +69,9 @@ public class AdminProductsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Mengambil detail data produk berdasarkan ID (Admin).
+    /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -77,6 +83,9 @@ public class AdminProductsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Membuat produk baru beserta varian opsional (Admin).
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(ProductDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -112,6 +121,9 @@ public class AdminProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id = result.Value.Id }, result.Value);
     }
 
+    /// <summary>
+    /// Memperbarui data produk berdasarkan ID (Admin).
+    /// </summary>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -134,6 +146,9 @@ public class AdminProductsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menghapus produk berdasarkan ID (soft delete) (Admin).
+    /// </summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -145,6 +160,9 @@ public class AdminProductsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menambahkan varian baru ke produk yang sudah ada (Admin).
+    /// </summary>
     [HttpPost("{id:guid}/variants")]
     [ProducesResponseType(typeof(ProductVariantDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -173,6 +191,9 @@ public class AdminProductsController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, result.Value);
     }
 
+    /// <summary>
+    /// Mengunggah gambar produk (format JPEG/PNG/WebP, maksimal 2 MB) (Admin).
+    /// </summary>
     [HttpPost("{id:guid}/images")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(ProductImageDto), StatusCodes.Status201Created)]
@@ -211,6 +232,9 @@ public class AdminProductsController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, result.Value);
     }
 
+    /// <summary>
+    /// Menghapus gambar produk berdasarkan ID (Admin).
+    /// </summary>
     [HttpDelete("{id:guid}/images/{imageId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]

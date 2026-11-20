@@ -28,6 +28,9 @@ public class ShippingController : ControllerBase
         _quoteHandler = quoteHandler;
     }
 
+    /// <summary>
+    /// Mendapatkan daftar tarif ongkos kirim provinsi yang aktif.
+    /// </summary>
     [HttpGet("provinces")]
     [ProducesResponseType(typeof(List<ShippingRateDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProvinces(CancellationToken cancellationToken)
@@ -38,6 +41,9 @@ public class ShippingController : ControllerBase
 
     public sealed record ShippingQuoteRequest(Guid AddressId);
 
+    /// <summary>
+    /// Menghitung estimasi ongkos kirim untuk isi keranjang belanja ke alamat tujuan yang dipilih.
+    /// </summary>
     [HttpPost("quote")]
     [Authorize]
     [ProducesResponseType(typeof(ShippingQuoteDto), StatusCodes.Status200OK)]

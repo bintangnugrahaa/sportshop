@@ -45,6 +45,9 @@ public class AddressesController : ControllerBase
         _setDefaultHandler = setDefaultHandler;
     }
 
+    /// <summary>
+    /// Mendapatkan daftar alamat pengiriman milik pengguna saat ini.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(List<AddressDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -59,6 +62,9 @@ public class AddressesController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Mendapatkan detail alamat pengiriman berdasarkan ID.
+    /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(AddressDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -85,6 +91,9 @@ public class AddressesController : ControllerBase
         string Street,
         bool IsDefault);
 
+    /// <summary>
+    /// Menambahkan alamat pengiriman baru untuk pengguna saat ini.
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(AddressDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -129,6 +138,9 @@ public class AddressesController : ControllerBase
         string Street,
         bool IsDefault);
 
+    /// <summary>
+    /// Memperbarui alamat pengiriman milik pengguna saat ini.
+    /// </summary>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(AddressDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -161,6 +173,9 @@ public class AddressesController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menghapus alamat pengiriman (soft delete).
+    /// </summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -177,6 +192,9 @@ public class AddressesController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menetapkan alamat pengiriman sebagai alamat default.
+    /// </summary>
     [HttpPost("{id:guid}/set-default")]
     [ProducesResponseType(typeof(AddressDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]

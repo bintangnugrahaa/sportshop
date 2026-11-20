@@ -29,6 +29,9 @@ public class AdminVariantsController : ControllerBase
         _adjustStockHandler = adjustStockHandler;
     }
 
+    /// <summary>
+    /// Memperbarui informasi varian produk berdasarkan ID varian (Admin).
+    /// </summary>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ProductVariantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -51,6 +54,9 @@ public class AdminVariantsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menghapus varian produk berdasarkan ID (soft delete) (Admin).
+    /// </summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -62,6 +68,9 @@ public class AdminVariantsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Melakukan penyesuaian stok manual untuk varian produk dan mencatat riwayat pergerakan stok (Admin).
+    /// </summary>
     [HttpPost("{id:guid}/stock-adjustments")]
     [ProducesResponseType(typeof(InventoryMovementDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]

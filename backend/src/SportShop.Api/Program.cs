@@ -48,18 +48,29 @@ app.MapSportShopHealthChecks();
 app.UseSportShopHangfireDashboard();
 app.MapControllers();
 
-app.MapGet("/", () => Results.Ok(new { Name = "SportShop API", Status = "Healthy" }));
+app.MapGet("/", () => Results.Ok(new { Name = "SportShop API", Status = "Healthy" }))
+    .WithSummary("Endpoint root status SportShop API")
+    .WithDescription("Pemeriksaan status dasar API.");
 
 // Rate-limited endpoint mappings for verification and auth/checkout policies
 var authGroup = app.MapGroup("/api/v1/auth").RequireRateLimiting(RateLimitingExtensions.AuthPolicy);
-authGroup.MapPost("/test-login", () => Results.Ok(new { Message = "Login ok" }));
-authGroup.MapGet("/test-protected", () => Results.Ok(new { Message = "Authenticated ok" })).RequireAuthorization();
+authGroup.MapPost("/test-login", () => Results.Ok(new { Message = "Login ok" }))
+    .WithSummary("Endpoint pengujian rate limit login")
+    .WithDescription("Khusus pengujian rate limiting login.");
+authGroup.MapGet("/test-protected", () => Results.Ok(new { Message = "Authenticated ok" }))
+    .RequireAuthorization()
+    .WithSummary("Endpoint pengujian otentikasi Bearer")
+    .WithDescription("Khusus pengujian token otentikasi.");
 
 var adminGroup = app.MapGroup("/api/v1/admin").RequireAuthorization(AuthExtensions.AdminPolicy);
-adminGroup.MapGet("/test-admin", () => Results.Ok(new { Message = "Admin ok" }));
+adminGroup.MapGet("/test-admin", () => Results.Ok(new { Message = "Admin ok" }))
+    .WithSummary("Endpoint pengujian otorisasi peran Admin")
+    .WithDescription("Khusus pengujian hak akses admin.");
 
 var checkoutGroup = app.MapGroup("/api/v1/checkout").RequireRateLimiting(RateLimitingExtensions.CheckoutPolicy);
-checkoutGroup.MapPost("/test-checkout", () => Results.Ok(new { Message = "Checkout ok" }));
+checkoutGroup.MapPost("/test-checkout", () => Results.Ok(new { Message = "Checkout ok" }))
+    .WithSummary("Endpoint pengujian rate limit checkout")
+    .WithDescription("Khusus pengujian rate limiting checkout.");
 
 if (builder.Configuration.GetValue<bool>("AutoMigrate", false))
 {

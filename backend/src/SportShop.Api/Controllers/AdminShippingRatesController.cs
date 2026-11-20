@@ -29,6 +29,9 @@ public class AdminShippingRatesController : ControllerBase
         _updateHandler = updateHandler;
     }
 
+    /// <summary>
+    /// Mengambil seluruh data tarif ongkos kirim provinsi (Admin).
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(List<ShippingRateDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -39,6 +42,9 @@ public class AdminShippingRatesController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Mengambil data tarif ongkos kirim untuk satu kode provinsi (Admin).
+    /// </summary>
     [HttpGet("{provinceCode}")]
     [ProducesResponseType(typeof(ShippingRateDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -59,6 +65,9 @@ public class AdminShippingRatesController : ControllerBase
         short EstimatedDaysMax,
         bool IsActive);
 
+    /// <summary>
+    /// Memperbarui tarif ongkos kirim untuk provinsi tertentu (Admin).
+    /// </summary>
     [HttpPut("{provinceCode}")]
     [ProducesResponseType(typeof(ShippingRateDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]

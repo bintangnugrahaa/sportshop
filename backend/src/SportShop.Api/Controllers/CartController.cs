@@ -41,6 +41,9 @@ public class CartController : ControllerBase
         _clearCartHandler = clearCartHandler;
     }
 
+    /// <summary>
+    /// Mendapatkan data keranjang belanja aktif milik pengguna saat ini.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -57,6 +60,9 @@ public class CartController : ControllerBase
 
     public sealed record AddCartItemRequest(Guid VariantId, int Quantity);
 
+    /// <summary>
+    /// Menambahkan item varian produk ke dalam keranjang belanja.
+    /// </summary>
     [HttpPost("items")]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -78,6 +84,9 @@ public class CartController : ControllerBase
 
     public sealed record UpdateCartItemRequest(int Quantity);
 
+    /// <summary>
+    /// Memperbarui jumlah item varian produk dalam keranjang belanja.
+    /// </summary>
     [HttpPut("items/{variantId:guid}")]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -99,6 +108,9 @@ public class CartController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menghapus item varian produk dari keranjang belanja.
+    /// </summary>
     [HttpDelete("items/{variantId:guid}")]
     [ProducesResponseType(typeof(CartDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -117,6 +129,9 @@ public class CartController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Mengosongkan seluruh item dalam keranjang belanja.
+    /// </summary>
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]

@@ -33,6 +33,9 @@ public class MeController : ControllerBase
         _changePasswordHandler = changePasswordHandler;
     }
 
+    /// <summary>
+    /// Mendapatkan data profil pengguna yang sedang login.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(UserProfileResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -50,6 +53,9 @@ public class MeController : ControllerBase
 
     public sealed record UpdateProfileRequest(string FullName, string? PhoneNumber);
 
+    /// <summary>
+    /// Memperbarui informasi profil pengguna yang sedang login.
+    /// </summary>
     [HttpPut]
     [ProducesResponseType(typeof(UserProfileResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -68,6 +74,9 @@ public class MeController : ControllerBase
 
     public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
+    /// <summary>
+    /// Mengubah kata sandi akun pengguna yang sedang login.
+    /// </summary>
     [HttpPost("change-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]

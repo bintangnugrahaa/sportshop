@@ -37,6 +37,9 @@ public class AdminBrandsController : ControllerBase
         _deleteHandler = deleteHandler;
     }
 
+    /// <summary>
+    /// Mengambil daftar semua brand (Admin).
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(List<BrandDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -49,6 +52,9 @@ public class AdminBrandsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Mengambil data detail brand berdasarkan ID (Admin).
+    /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(BrandDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -60,6 +66,9 @@ public class AdminBrandsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Membuat brand baru (Admin).
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(BrandDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -83,6 +92,9 @@ public class AdminBrandsController : ControllerBase
         return CreatedAtAction(nameof(GetBrandById), new { id = result.Value.Id }, result.Value);
     }
 
+    /// <summary>
+    /// Memperbarui data brand berdasarkan ID (Admin).
+    /// </summary>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(BrandDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -103,6 +115,9 @@ public class AdminBrandsController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menghapus brand berdasarkan ID (soft delete) (Admin).
+    /// </summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]

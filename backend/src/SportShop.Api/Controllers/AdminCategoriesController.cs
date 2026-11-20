@@ -37,6 +37,9 @@ public class AdminCategoriesController : ControllerBase
         _deleteHandler = deleteHandler;
     }
 
+    /// <summary>
+    /// Mengambil daftar semua kategori produk (Admin).
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(List<CategoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -50,6 +53,9 @@ public class AdminCategoriesController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Mengambil detail kategori berdasarkan ID (Admin).
+    /// </summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -61,6 +67,9 @@ public class AdminCategoriesController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Membuat kategori produk baru (maksimal 2 tingkat kedalaman) (Admin).
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -85,6 +94,9 @@ public class AdminCategoriesController : ControllerBase
         return CreatedAtAction(nameof(GetCategoryById), new { id = result.Value.Id }, result.Value);
     }
 
+    /// <summary>
+    /// Memperbarui kategori produk berdasarkan ID (Admin).
+    /// </summary>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status400BadRequest)]
@@ -106,6 +118,9 @@ public class AdminCategoriesController : ControllerBase
         return result.ToActionResult(HttpContext);
     }
 
+    /// <summary>
+    /// Menghapus kategori produk berdasarkan ID (soft delete) (Admin).
+    /// </summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SportShopProblemDetails), StatusCodes.Status401Unauthorized)]
