@@ -15,9 +15,11 @@ const ResetPasswordPage = React.lazy(() => import('@/features/auth/pages/ResetPa
 const CartPage = React.lazy(() => import('@/features/cart/pages/CartPage'));
 const AddressesPage = React.lazy(() => import('@/features/account/pages/AddressesPage'));
 const CheckoutPage = React.lazy(() => import('@/features/checkout/pages/CheckoutPage'));
+const PaymentStatusPage = React.lazy(
+  () => import('@/features/checkout/pages/PaymentStatusPage')
+);
 
 // Placeholder components for future phases
-const PaymentStatusPage = () => <div className="container mx-auto p-8">Status Pembayaran</div>;
 const MyOrdersPage = () => <div className="container mx-auto p-8">Pesanan Saya</div>;
 const ProfilePage = () => <div className="container mx-auto p-8">Profil Pengguna</div>;
 const AdminDashboard = () => <div className="container mx-auto p-8">Dashboard Admin</div>;

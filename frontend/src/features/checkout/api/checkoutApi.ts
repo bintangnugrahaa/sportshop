@@ -21,6 +21,11 @@ export const checkoutApi = {
     return res.data;
   },
 
+  getOrder: async (orderNumber: string): Promise<Order> => {
+    const res = await http.get<Order>(`/orders/${orderNumber}`);
+    return res.data;
+  },
+
   payOrder: async (orderNumber: string): Promise<PayOrderResponse> => {
     const res = await http.post<PayOrderResponse>(`/orders/${orderNumber}/pay`);
     return res.data;
@@ -45,6 +50,34 @@ export function useCheckout() {
       // Cart has been emptied on backend
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+}
+
+export function useOrder(orderNumber: string, enablePolling = false) {
+  return useQuery({
+    queryKey: ['orders', orderNumber],
+    queryFn: () => checkoutApi.getOrder(orderNumber),
+    enabled: Boolean(orderNumber),
+    refetchInterval: (query) => {
+      if (!enablePolling) return false;
+      const data = query.state.data as Order | undefined;
+      // Poll every 3 seconds while pending
+      if (data && data.status === 'PendingPayment') {
+        return 3000;
+      }
+      return false;
+    },
+    staleTime: 0,
+  });
+}
+
+export function usePayOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderNumber: string) => checkoutApi.payOrder(orderNumber),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['orders', data.orderNumber] });
     },
   });
 }
