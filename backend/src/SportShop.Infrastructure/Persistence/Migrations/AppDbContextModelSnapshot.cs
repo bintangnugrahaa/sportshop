@@ -873,6 +873,182 @@ namespace SportShop.Infrastructure.Persistence.Migrations
                     b.ToTable("order_status_histories", (string)null);
                 });
 
+            modelBuilder.Entity("SportShop.Domain.Payments.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FraudStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("fraud_status");
+
+                    b.Property<decimal>("GrossAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("gross_amount");
+
+                    b.Property<DateTime?>("LastNotificationAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("last_notification_at");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("PaymentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("payment_type");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasDefaultValue("Midtrans")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("RawLastPayload")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_last_payload");
+
+                    b.Property<DateTime?>("SettledAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("settled_at");
+
+                    b.Property<string>("SnapRedirectUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("snap_redirect_url");
+
+                    b.Property<string>("SnapToken")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("snap_token");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("transaction_id");
+
+                    b.Property<DateTime?>("TransactionTime")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("transaction_time");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payments");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payments_order_active")
+                        .HasFilter("status IN ('Pending', 'Settlement', 'Capture')");
+
+                    b.HasIndex("TransactionId")
+                        .HasDatabaseName("ix_payments_transaction_id");
+
+                    b.HasIndex("Status", "CreatedAt")
+                        .HasDatabaseName("ix_payments_status_created_at");
+
+                    b.ToTable("payments", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_payments_gross_amount_positive", "gross_amount > 0");
+
+                            t.HasCheckConstraint("ck_payments_status", "status IN ('Pending', 'Settlement', 'Capture', 'Deny', 'Cancel', 'Expire', 'Failure', 'Refund')");
+                        });
+                });
+
+            modelBuilder.Entity("SportShop.Domain.Payments.PaymentNotification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("DedupKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("dedup_key");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("order_number");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payload");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_id");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("received_at");
+
+                    b.Property<bool>("SignatureValid")
+                        .HasColumnType("boolean")
+                        .HasColumnName("signature_valid");
+
+                    b.Property<string>("StatusCode")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasColumnName("status_code");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("transaction_id");
+
+                    b.Property<string>("TransactionStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("transaction_status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payment_notifications");
+
+                    b.HasIndex("DedupKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payment_notifications_dedup_key");
+
+                    b.HasIndex("OrderNumber")
+                        .HasDatabaseName("ix_payment_notifications_order_number");
+
+                    b.HasIndex("PaymentId")
+                        .HasDatabaseName("ix_payment_notifications_payment_id");
+
+                    b.ToTable("payment_notifications", (string)null);
+                });
+
             modelBuilder.Entity("SportShop.Domain.Shipping.ShippingRate", b =>
                 {
                     b.Property<string>("ProvinceCode")
@@ -1874,6 +2050,29 @@ namespace SportShop.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_order_status_histories_orders_order_id");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("SportShop.Domain.Payments.Payment", b =>
+                {
+                    b.HasOne("SportShop.Domain.Orders.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_payments_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("SportShop.Domain.Payments.PaymentNotification", b =>
+                {
+                    b.HasOne("SportShop.Domain.Payments.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_payment_notifications_payments_payment_id");
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("SportShop.Domain.Users.Address", b =>

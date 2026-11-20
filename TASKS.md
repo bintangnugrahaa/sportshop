@@ -84,7 +84,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 
 | ✓ | ID | Tugas | Dep | Ukuran | Kriteria penerimaan |
 |---|---|---|---|---|---|
-| [ ] | T6-01 | Domain/EF `payments`, `payment_notifications`; `IPaymentGateway` + `MidtransClient` (Snap create, status check) | T5-02 | L | Dites dengan HTTP handler palsu |
+| [x] | T6-01 | Domain/EF `payments`, `payment_notifications`; `IPaymentGateway` + `MidtransClient` (Snap create, status check) | T5-02 | L | Dites dengan HTTP handler palsu |
 | [ ] | T6-02 | Polly: timeout, retry, circuit breaker pada HttpClient Midtrans | T6-01 | M | Test: 2× 503 lalu sukses → berhasil; breaker terbuka sesuai konfigurasi |
 | [ ] | T6-03 | Integrasi checkout → buat transaksi Snap → simpan payment; `POST /orders/{n}/pay` untuk melanjutkan | T6-01, T5-03 | M | Token tak tersedia ≠ pesanan hilang |
 | [ ] | T6-04 | **Webhook**: verifikasi signature (SHA512, constant-time), dedup, konfirmasi Status API, pemetaan status (`DESIGN.md` A5), idempoten & tahan urutan terbalik | T6-03 | L | Test: signature salah → 401/diabaikan; duplikat aman; `gross_amount` beda → ditandai mismatch |

@@ -5,6 +5,7 @@ using SportShop.Domain.Carts;
 using SportShop.Domain.Catalog;
 using SportShop.Domain.Inventory;
 using SportShop.Domain.Orders;
+using SportShop.Domain.Payments;
 using SportShop.Domain.Shipping;
 using SportShop.Domain.Users;
 using SportShop.Infrastructure.Identity;
@@ -32,6 +33,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderStatusHistory> OrderStatusHistories => Set<OrderStatusHistory>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<PaymentNotification> PaymentNotifications => Set<PaymentNotification>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

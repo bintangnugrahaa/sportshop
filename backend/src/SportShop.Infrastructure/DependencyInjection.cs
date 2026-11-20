@@ -113,6 +113,8 @@ public static class DependencyInjection
         services.AddScoped<IShippingRateRepository, Persistence.Repositories.ShippingRateRepository>();
         services.AddScoped<IAddressRepository, Persistence.Repositories.AddressRepository>();
         services.AddScoped<IOrderRepository, Persistence.Repositories.OrderRepository>();
+        services.AddScoped<IPaymentRepository, Persistence.Repositories.PaymentRepository>();
+        services.AddHttpClient<IPaymentGateway, Services.MidtransClient>();
         services.AddSingleton<IOrderNumberGenerator, Services.OrderNumberGenerator>();
         services.AddScoped<IFileStorage, Storage.LocalFileStorage>();
 
