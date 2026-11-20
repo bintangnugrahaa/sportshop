@@ -134,7 +134,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T10-06 | Profil & ganti password | T9-03, T2-05 | S | — |
 | [x] | T10-07 | Admin: kerangka layout + dashboard | T9-01, T7-01 | M | Hanya role Admin |
 | [x] | T10-08 | Admin: produk, varian, gambar, kategori, brand | T10-07, T3-04 | L | Upload & validasi bekerja |
-| [ ] | T10-09 | Admin: stok & penyesuaian, daftar stok menipis | T10-07, T3-05 | M | — |
+| [x] | T10-09 | Admin: stok & penyesuaian, daftar stok menipis | T10-07, T3-05 | M | — |
 | [ ] | T10-10 | Admin: pesanan (filter, detail, ubah status, input resi) | T10-07, T5-07 | L | Aksi hanya muncul sesuai status |
 | [ ] | T10-11 | Admin: tarif ongkir | T10-07, T4-04 | S | — |
 | [ ] | T10-12 | Aksesibilitas & responsif: audit Lighthouse, keyboard, kontras; code splitting Admin | T10-10 | M | Accessibility ≥ 90 (NFR-09); bundle awal < 200 KB gzip |
