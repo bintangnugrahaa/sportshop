@@ -119,6 +119,7 @@ public static class DependencyInjection
         services.AddScoped<IAddressRepository, Persistence.Repositories.AddressRepository>();
         services.AddScoped<IOrderRepository, Persistence.Repositories.OrderRepository>();
         services.AddScoped<IPaymentRepository, Persistence.Repositories.PaymentRepository>();
+        services.AddScoped<IOrderNotificationService, Services.OrderNotificationService>();
         services.AddHttpClient<IPaymentGateway, Services.MidtransClient>()
             .AddResilienceHandler("midtrans-pipeline", (builder, context) =>
             {

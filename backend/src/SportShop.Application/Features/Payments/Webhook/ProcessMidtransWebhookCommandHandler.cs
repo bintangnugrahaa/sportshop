@@ -14,6 +14,8 @@ public sealed class ProcessMidtransWebhookCommandHandler
     private readonly IPaymentRepository _paymentRepository;
     private readonly IProductRepository _productRepository;
     private readonly IPaymentGateway _paymentGateway;
+    private readonly IOrderNotificationService _notificationService;
+    private readonly IIdentityService _identityService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
 
@@ -22,6 +24,8 @@ public sealed class ProcessMidtransWebhookCommandHandler
         IPaymentRepository paymentRepository,
         IProductRepository productRepository,
         IPaymentGateway paymentGateway,
+        IOrderNotificationService notificationService,
+        IIdentityService identityService,
         IUnitOfWork unitOfWork,
         IClock clock)
     {
@@ -29,6 +33,8 @@ public sealed class ProcessMidtransWebhookCommandHandler
         _paymentRepository = paymentRepository;
         _productRepository = productRepository;
         _paymentGateway = paymentGateway;
+        _notificationService = notificationService;
+        _identityService = identityService;
         _unitOfWork = unitOfWork;
         _clock = clock;
     }
@@ -165,6 +171,8 @@ public sealed class ProcessMidtransWebhookCommandHandler
                 parsedSettlementTime = DateTime.SpecifyKind(pst, DateTimeKind.Utc);
             }
 
+            var transitionedToPaid = false;
+
             await _unitOfWork.ExecuteInTransactionAsync(async ct =>
             {
                 payment.ApplyNotification(
@@ -183,6 +191,7 @@ public sealed class ProcessMidtransWebhookCommandHandler
                     {
                         order.MarkPaid(now, note: $"Pembayaran berhasil diverifikasi ({transactionStatus})");
                         await _orderRepository.UpdateAsync(order, ct);
+                        transitionedToPaid = true;
                     }
                 }
                 else if (mappedPaymentStatus == PaymentStatus.Cancel)
@@ -246,6 +255,13 @@ public sealed class ProcessMidtransWebhookCommandHandler
 
                 await _paymentRepository.AddNotificationAsync(notification, ct);
             }, cancellationToken);
+
+            if (transitionedToPaid)
+            {
+                var profileResult = await _identityService.GetUserProfileAsync(order.UserId, cancellationToken);
+                var email = profileResult.IsSuccess ? profileResult.Value.Email : "customer@sportshop.dev";
+                _notificationService.EnqueueOrderPaidEmail(email, order.ShippingAddress.RecipientName, order.OrderNumber, order.Total, now);
+            }
 
             return Result.Success(new WebhookProcessResult("processed", $"Notifikasi berhasil diproses: {mappedPaymentStatus}"));
         }

@@ -21,6 +21,7 @@ public sealed class CheckoutOrderCommandHandler
     private readonly IOrderRepository _orderRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IPaymentGateway _paymentGateway;
+    private readonly IOrderNotificationService _notificationService;
     private readonly IOrderNumberGenerator _orderNumberGenerator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
@@ -35,6 +36,7 @@ public sealed class CheckoutOrderCommandHandler
         IOrderRepository orderRepository,
         IPaymentRepository paymentRepository,
         IPaymentGateway paymentGateway,
+        IOrderNotificationService notificationService,
         IOrderNumberGenerator orderNumberGenerator,
         IUnitOfWork unitOfWork,
         IClock clock,
@@ -48,6 +50,7 @@ public sealed class CheckoutOrderCommandHandler
         _orderRepository = orderRepository;
         _paymentRepository = paymentRepository;
         _paymentGateway = paymentGateway;
+        _notificationService = notificationService;
         _orderNumberGenerator = orderNumberGenerator;
         _unitOfWork = unitOfWork;
         _clock = clock;
@@ -216,6 +219,7 @@ public sealed class CheckoutOrderCommandHandler
 
         CreateSnapTransactionResult? snapResult = null;
         Payment? payment = null;
+        var customerEmail = _currentUser.Email ?? "customer@sportshop.dev";
 
         try
         {
@@ -227,7 +231,6 @@ public sealed class CheckoutOrderCommandHandler
             )).ToList();
             snapItems.Add(new SnapItemDto("shipping", "Biaya Pengiriman", createdOrder.ShippingFee, 1));
 
-            var customerEmail = _currentUser.Email ?? "customer@sportshop.dev";
             var snapRequest = new CreateSnapTransactionRequest(
                 OrderNumber: createdOrder.OrderNumber,
                 GrossAmount: createdOrder.Total,
@@ -261,6 +264,13 @@ public sealed class CheckoutOrderCommandHandler
         var paymentStatus = snapResult is not null && snapResult.Success
             ? "pending"
             : "token_unavailable";
+
+        _notificationService.EnqueueOrderCreatedEmail(
+            customerEmail,
+            createdOrder!.ShippingAddress.RecipientName,
+            createdOrder.OrderNumber,
+            createdOrder.Total,
+            createdOrder.ExpiresAt);
 
         return Result.Success(createdOrder!.ToDto(
             payment: payment,

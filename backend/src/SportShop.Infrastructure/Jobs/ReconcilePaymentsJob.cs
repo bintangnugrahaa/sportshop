@@ -14,6 +14,8 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
     private readonly IOrderRepository _orderRepository;
     private readonly IProductRepository _productRepository;
     private readonly IPaymentGateway _paymentGateway;
+    private readonly IOrderNotificationService _notificationService;
+    private readonly IIdentityService _identityService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly ILogger<ReconcilePaymentsJob> _logger;
@@ -23,6 +25,8 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
         IOrderRepository orderRepository,
         IProductRepository productRepository,
         IPaymentGateway paymentGateway,
+        IOrderNotificationService notificationService,
+        IIdentityService identityService,
         IUnitOfWork unitOfWork,
         IClock clock,
         ILogger<ReconcilePaymentsJob> logger)
@@ -31,6 +35,8 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
         _orderRepository = orderRepository;
         _productRepository = productRepository;
         _paymentGateway = paymentGateway;
+        _notificationService = notificationService;
+        _identityService = identityService;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _logger = logger;
@@ -72,6 +78,8 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
                     continue;
                 }
 
+                var transitionedToPaid = false;
+
                 await _unitOfWork.ExecuteInTransactionAsync(async ct =>
                 {
                     payment.ApplyNotification(
@@ -90,6 +98,7 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
                         {
                             order.MarkPaid(now, note: "Pembayaran disinkronkan oleh ReconcilePaymentsJob");
                             await _orderRepository.UpdateAsync(order, ct);
+                            transitionedToPaid = true;
                         }
                     }
                     else if (mappedStatus == PaymentStatus.Cancel)
@@ -162,6 +171,13 @@ public sealed partial class ReconcilePaymentsJob : IReconcilePaymentsJob
                         await _paymentRepository.AddNotificationAsync(notification, ct);
                     }
                 }, cancellationToken);
+
+                if (transitionedToPaid)
+                {
+                    var profileResult = await _identityService.GetUserProfileAsync(order.UserId, cancellationToken);
+                    var email = profileResult.IsSuccess ? profileResult.Value.Email : "customer@sportshop.dev";
+                    _notificationService.EnqueueOrderPaidEmail(email, order.ShippingAddress.RecipientName, order.OrderNumber, order.Total, now);
+                }
 
                 LogReconciledSuccess(_logger, order.OrderNumber, mappedStatus.ToString(), order.Status.ToString());
             }

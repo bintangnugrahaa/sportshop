@@ -11,6 +11,8 @@ public sealed class ShipOrderCommandHandler
 {
     private readonly ICurrentUser _currentUser;
     private readonly IOrderRepository _orderRepository;
+    private readonly IOrderNotificationService _notificationService;
+    private readonly IIdentityService _identityService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly IValidator<ShipOrderCommand> _validator;
@@ -18,12 +20,16 @@ public sealed class ShipOrderCommandHandler
     public ShipOrderCommandHandler(
         ICurrentUser currentUser,
         IOrderRepository orderRepository,
+        IOrderNotificationService notificationService,
+        IIdentityService identityService,
         IUnitOfWork unitOfWork,
         IClock clock,
         IValidator<ShipOrderCommand> validator)
     {
         _currentUser = currentUser;
         _orderRepository = orderRepository;
+        _notificationService = notificationService;
+        _identityService = identityService;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _validator = validator;
@@ -58,6 +64,10 @@ public sealed class ShipOrderCommandHandler
                 order.Ship(command.Courier, command.TrackingNumber, now, changedBy: adminUserId, note: command.Note);
                 await _orderRepository.UpdateAsync(order, ct);
             }, cancellationToken);
+
+            var profileResult = await _identityService.GetUserProfileAsync(order.UserId, cancellationToken);
+            var email = profileResult.IsSuccess ? profileResult.Value.Email : "customer@sportshop.dev";
+            _notificationService.EnqueueOrderShippedEmail(email, order.ShippingAddress.RecipientName, order.OrderNumber, order.Courier!, order.TrackingNumber!, now);
         }
         catch (DomainException ex)
         {
