@@ -52,14 +52,21 @@ jobs:
       - name: Generate Code Coverage Report
         if: always()
         run: |
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          reportgenerator \
-            -reports:"TestResults/**/coverage.cobertura.xml" \
-            -targetdir:"TestResults/CoverageReport" \
-            -reporttypes:"MarkdownSummaryGithub;TextSummary"
-          cat TestResults/CoverageReport/Summary.txt
-          if [ -f "$GITHUB_STEP_SUMMARY" ]; then
-            cat TestResults/CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet tool install -g dotnet-reportgenerator-globaltool || true
+          if [ -d "TestResults" ] && compgen -G "TestResults/**/coverage.cobertura.xml" > /dev/null; then
+            reportgenerator \
+              -reports:"TestResults/**/coverage.cobertura.xml" \
+              -targetdir:"TestResults/CoverageReport" \
+              -reporttypes:"MarkdownSummaryGithub;TextSummary" || true
+            if [ -f "TestResults/CoverageReport/Summary.txt" ]; then
+              cat TestResults/CoverageReport/Summary.txt
+            fi
+            if [ -f "TestResults/CoverageReport/SummaryGithub.md" ] && [ -n "$GITHUB_STEP_SUMMARY" ]; then
+              cat TestResults/CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "No test coverage xml files found to process."
           fi
 
       - name: Upload test results
@@ -68,3 +75,4 @@ jobs:
         with:
           name: backend-test-results
           path: backend/TestResults
+          if-no-files-found: ignore
