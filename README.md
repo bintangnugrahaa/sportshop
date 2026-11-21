@@ -1,330 +1,460 @@
-# SportShop — Platform E-Commerce Perlengkapan Olahraga
+<div align="center">
 
-SportShop adalah sistem toko online tunggal (*single-merchant*) untuk perlengkapan olahraga (sepatu, jersey, raket, bola, dan aksesori) yang dibangun dengan standar industri, **Clean Architecture**, keandalan transaksi stok atomik (*no overselling*), keamanan ketat, serta integrasi gateway pembayaran **Midtrans Snap**.
+# SportShop
+
+### Enterprise-Grade High-Concurrency E-Commerce Platform
+
+[![CI Backend](https://github.com/bintangnugrahaa/sportshop/actions/workflows/ci-backend.yml/badge.svg)](https://github.com/bintangnugrahaa/sportshop/actions/workflows/ci-backend.yml)
+[![CI Frontend](https://github.com/bintangnugrahaa/sportshop/actions/workflows/ci-frontend.yml/badge.svg)](https://github.com/bintangnugrahaa/sportshop/actions/workflows/ci-frontend.yml)
+[![Docker Images (GHCR)](https://github.com/bintangnugrahaa/sportshop/actions/workflows/docker.yml/badge.svg)](https://github.com/bintangnugrahaa/sportshop/actions/workflows/docker.yml)
+[![CodeQL Analysis](https://github.com/bintangnugrahaa/sportshop/actions/workflows/codeql.yml/badge.svg)](https://github.com/bintangnugrahaa/sportshop/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4.svg?logo=dotnet)](https://dotnet.microsoft.com/)
+[![React 18](https://img.shields.io/badge/React-18.3-61DAFB.svg?logo=react)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1.svg?logo=postgresql)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7.0-DC382D.svg?logo=redis)](https://redis.io/)
+[![Security: OWASP ASVS L2](https://img.shields.io/badge/Security-OWASP%20ASVS%20L2-brightgreen.svg)](https://owasp.org/www-project-application-security-verification-standard/)
+
+<p align="center">
+  A production-ready, resilient, and horizontally scalable single-merchant e-commerce platform for sporting gear.<br />
+  Engineered with <strong>Clean Architecture</strong>, strict <strong>Domain-Driven Design (DDD)</strong>, atomic conditional stock reservations (<strong>zero overselling</strong>), constant-time cryptographic payment reconciliation, and automated background workers.
+</p>
+
+[Key Features](#key-features) •
+[Architecture](#system-architecture) •
+[Domain & State Machine](#order-lifecycle--state-machine) •
+[Database Design](#database-design--schema) •
+[Quickstart](#quickstart--developer-experience) •
+[Midtrans Sandbox](#midtrans-payment-gateway-integration) •
+[Testing & QA](#testing--quality-assurance) •
+[Observability](#observability--sre) •
+[Security & Compliance](#security--hardening)
 
 ---
 
-## Daftar Isi
-- [Arsitektur & Tech Stack](#arsitektur--tech-stack)
-- [Dokumentasi Perencanaan & Spesifikasi](#dokumentasi-perencanaan--spesifikasi)
-- [Panduan Memulai Cepat (< 15 Menit)](#panduan-memulai-cepat--15-menit)
-  - [Prasyarat Sistem](#prasyarat-sistem)
-  - [Opsi 1: Menjalankan dengan Docker Compose (Direkomendasikan)](#opsi-1-menjalankan-dengan-docker-compose-direkomendasikan)
-  - [Opsi 2: Menjalankan Secara Bare-Metal (Development)](#opsi-2-menjalankan-secara-bare-metal-development)
-- [Variabel Lingkungan (Environment Variables)](#variabel-lingkungan-environment-variables)
-- [Migrasi Database & Seeding Data](#migrasi-database--seeding-data)
-- [Panduan Pengujian End-to-End Sandbox Midtrans](#panduan-pengujian-end-to-end-sandbox-midtrans)
-  - [1. Konfigurasi Kunci API & Webhook Tunnel](#1-konfigurasi-kunci-api--webhook-tunnel)
-  - [2. Simulator & Pembayaran Sandbox](#2-simulator--pembayaran-sandbox)
-  - [3. Checklist Skenario Pengujian Midtrans](#3-checklist-skenario-pengujian-midtrans)
-- [Menjalankan Pengujian Otomatis (Testing)](#menjalankan-pengujian-otomatis-testing)
-  - [Testing Backend (.NET)](#testing-backend-net)
-  - [Testing Frontend (React + Vitest)](#testing-frontend-react--vitest)
-- [Observabilitas & Monitoring Lokal](#observabilitas--monitoring-lokal)
-- [Panduan Rilis Produksi (Docker Compose)](#panduan-rilis-produksi-docker-compose)
+</div>
+
+## Executive Overview
+
+**SportShop** is built to model how mission-critical financial and retail microservices operate at top-tier technology companies. Unlike naive e-commerce boilerplate, SportShop strictly addresses core engineering complexities of distributed retail systems:
+
+1. **Zero Overselling Under High Concurrency**: Eliminates race conditions with atomic conditional database mutations (`UPDATE ... WHERE stock_quantity >= @qty`) accompanied by immutable inventory movement audit ledgers.
+2. **Defensive Financial Integrity**: Midtrans Snap integration backed by constant-time SHA-512 signature validation, anti-replay unique constraints, out-of-order webhook reconciliation, and automated polling jobs.
+3. **Resilient Domain State Engine**: Strictly enforced order state transitions guaranteeing that cancelled or expired transactions automatically and atomically return stock to available inventory exactly once.
+4. **Cloud-Native & Hardened Infrastructure**: Containerized with unprivileged non-root users, reverse-proxied with hardened Nginx headers, cached with Redis cache-aside, monitored with OpenTelemetry and Serilog Seq, and verified against OWASP ASVS Level 2 security controls.
 
 ---
 
-## Arsitektur & Tech Stack
+## System Architecture
+
+SportShop adheres strictly to **Clean Architecture** and **Inversion of Control (IoC)** principles. The dependency flow points strictly inwards: `Api → Infrastructure → Application → Domain`.
 
 ```
-                  ┌─────────────────────────────────────────┐
-                  │          React SPA (Vite + TS)          │
-                  │   Tailwind CSS + shadcn/ui + TanStack   │
-                  └────────────────────┬────────────────────┘
-                                       │ HTTPS / JSON / JWT
-                                       ▼
-                  ┌─────────────────────────────────────────┐
-                  │       ASP.NET Core Web API (.NET 8)     │
-                  │        Clean Architecture Solution      │
-                  └───┬──────────┬──────────┬───────────┬───┘
-                      │          │          │           │
-       PostgreSQL 17 ◄┘   Redis ◄┘    Seq ◄─┘  Midtrans ◄┘
-         (EF Core)        (Cache)  (Logs/OTel)   (Snap)
+                  ┌──────────────────────────────────────────────┐
+                  │           React SPA (Vite + TypeScript)      │
+                  │   Tailwind CSS + shadcn/ui + TanStack Query  │
+                  └───────────────────────┬──────────────────────┘
+                                          │ HTTPS / REST / JWT
+                                          ▼
+                  ┌──────────────────────────────────────────────┐
+                  │        Nginx Unprivileged Reverse Proxy      │
+                  │      (TLS Termination, Rate Limiting, CSP)   │
+                  └───────────────────────┬──────────────────────┘
+                                          │
+                                          ▼
+                  ┌──────────────────────────────────────────────┐
+                  │          SportShop ASP.NET Core Web API       │
+                  │     (Clean Architecture / Minimal / CQRS)    │
+                  └──────┬────────────┬─────────────┬────────────┘
+                         │            │             │
+        ┌────────────────┼────────────┼─────────────┼────────────────┐
+        ▼                ▼            ▼             ▼                ▼
+┌──────────────┐ ┌──────────────┐ ┌───────┐ ┌───────────────┐ ┌─────────────┐
+│ PostgreSQL 17│ │Redis 7 Cache │ │Seq OTel││ Hangfire Jobs │ │Midtrans Snap│
+│  (Data Store)│ │(Cache-Aside) │ │ (Logs) ││(Storage in DB)│ │(Gateway/Pay)│
+└──────────────┘ └──────────────┘ └───────┘ └───────────────┘ └─────────────┘
 ```
 
-- **Backend**: C# 12 / .NET 8, ASP.NET Core Web API, EF Core (Npgsql), PostgreSQL 17, ASP.NET Core Identity, JWT Bearer (rotasi & deteksi reuse), FluentValidation, Mapperly, Redis 7 (cache-aside), Hangfire (PostgreSQL storage), Polly HTTP resilience, OpenTelemetry & Serilog (Seq sink), HealthChecks.
-- **Frontend**: React 18, TypeScript strict, Vite, Tailwind CSS, shadcn/ui, TanStack Query v5, Zustand, React Hook Form, Zod, Axios dengan interceptor auto-refresh token.
-- **Infrastruktur**: Multi-stage non-root Dockerfile, Nginx reverse proxy unprivileged, Docker Compose (Dev & Prod), GitHub Actions CI/CD (GHCR).
-- **Pengujian**: xUnit, Moq, FluentAssertions, WebApplicationFactory, Testcontainers (PostgreSQL & Redis), Vitest, React Testing Library.
+### Architectural Layering
 
----
-
-## Dokumentasi Perencanaan & Spesifikasi
-
-Arsitektur dan kontrak sistem secara detail terdokumentasi dalam dokumen berikut:
-- [AGENTS.md](file:///d:/laragon/www/sportshop/AGENTS.md) — Aturan kerja tim dan coding agent, standar Clean Architecture, konvensi kode, dan Definition of Done.
-- [PRD.md](file:///d:/laragon/www/sportshop/PRD.md) — Kebutuhan produk, batasan MVP, persona, diagram transisi status pesanan, dan Non-Functional Requirements.
-- [DATABASE.md](file:///d:/laragon/www/sportshop/DATABASE.md) — Desain skema basis data PostgreSQL, relasi ERD, konvensi penamaan snake_case, dan optimistik konkurensi (xmin).
-- [DESIGN.md](file:///d:/laragon/www/sportshop/DESIGN.md) — Kontrak API lengkap (RFC 7807 ProblemDetails), desain frontend UI, alur checkout Midtrans, dan DevOps.
-- [TASKS.md](file:///d:/laragon/www/sportshop/TASKS.md) — Rincian tugas per fase pengerjaan dari Fase 0 hingga Fase 11.
-
----
-
-## Panduan Memulai Cepat (< 15 Menit)
-
-### Prasyarat Sistem
-Pastikan perangkat Anda memiliki perangkat lunak berikut:
-- **Docker Desktop** (atau Docker Engine + Compose v2)
-- *.NET 8 SDK* (opsional jika hanya menjalankan via Docker)
-- *Node.js 20+ & npm* (opsional jika hanya menjalankan via Docker)
-
----
-
-### Opsi 1: Menjalankan dengan Docker Compose (Direkomendasikan)
-
-Cara termudah dan tercepat untuk menjalankan seluruh ekosistem SportShop:
-
-1. **Clone repository dan siapkan environment**:
-   ```bash
-   git clone <repo-url> sportshop
-   cd sportshop
-   cp .env.example .env
-   ```
-
-2. **Jalankan seluruh kontainer**:
-   ```bash
-   docker compose up -d --build
-   ```
-
-3. **Akses antarmuka layanan**:
-   - **Frontend (Toko & Admin)**: `http://localhost:5173`
-   - **Swagger / OpenAPI**: `http://localhost:5080/swagger`
-   - **Hangfire Dashboard (Admin Only)**: `http://localhost:5080/hangfire`
-   - **Seq Observability & Log Dashboard**: `http://localhost:5341`
-   - **Mailpit Web Email Inbox**: `http://localhost:8025`
-
-4. **Kredensial Bawaan (Default Seed Data)**:
-   - **Akun Admin**: `admin@sportshop.dev` / `Admin123!`
-   - **Database Postgres**: `localhost:5432` (User: `postgres`, Pass: `postgres`, DB: `sportshop`)
-   - **Katalog Demo**: ±30 produk olahraga, varian ukuran/warna, kategori, dan brand sudah otomatis terisi saat pertama kali start.
-
----
-
-### Opsi 2: Menjalankan Secara Bare-Metal (Development)
-
-Jika ingin mengembangkan backend dan frontend secara aktif dengan hot-reload:
-
-1. **Jalankan dependensi pihak ketiga via Docker**:
-   ```bash
-   docker compose up -d db redis seq mailpit
-   ```
-
-2. **Jalankan Backend API**:
-   ```bash
-   cd backend
-   dotnet restore
-   dotnet run --project src/SportShop.Api
-   ```
-   API akan mendengarkan pada `http://localhost:5080` (atau port profil yang dikonfigurasi).
-
-3. **Jalankan Frontend React**:
-   ```bash
-   cd frontend
-   npm ci
-   npm run dev
-   ```
-   Vite dev server akan aktif di `http://localhost:5173`.
-
----
-
-## Variabel Lingkungan (Environment Variables)
-
-File `.env.example` telah disediakan di root repositori. Berikut penjelasan setiap parameter:
-
-| Variabel | Deskripsi | Default Dev |
+| Layer | Responsibilities | Constraints |
 |---|---|---|
-| `POSTGRES_USER` | Username PostgreSQL | `postgres` |
-| `POSTGRES_PASSWORD` | Password PostgreSQL | `postgres` |
-| `POSTGRES_DB` | Nama database | `sportshop` |
-| `ConnectionStrings__Default` | ADO.NET Connection String | `Host=db;Port=5432;...` |
-| `Redis__ConnectionString` | Host & port Redis cache | `redis:6379` |
-| `Jwt__Key` | Kunci simetris penandatanganan JWT (min. 32 char) | *(Kunci rahasia dev)* |
-| `Jwt__Issuer` | Issuer JWT | `SportShopApi` |
-| `Jwt__Audience` | Audience JWT | `SportShopClient` |
-| `Midtrans__ServerKey` | Server Key dari Midtrans Sandbox | `SB-Mid-server-...` |
-| `Midtrans__ClientKey` | Client Key dari Midtrans Sandbox | `SB-Mid-client-...` |
-| `Midtrans__IsProduction` | Flag mode produksi Midtrans | `false` |
-| `Cors__Origins` | Origin frontend yang diizinkan (koma sebagai pemisah) | `http://localhost:5173,http://localhost:80` |
-| `Seq__ServerUrl` | Endpoint UI Seq untuk sink Serilog | `http://seq:5341` |
-| `Otel__OtlpEndpoint` | Endpoint OTLP HTTP/gRPC untuk trace EF & HTTP | `http://seq:5341/ingest/otlp` |
-| `Smtp__Host` | Host SMTP untuk pengiriman email transaksional | `mailpit` |
-| `Smtp__Port` | Port SMTP | `1025` |
-| `Smtp__From` | Alamat pengirim email sistem | `no-reply@sportshop.dev` |
-| `SEED_ADMIN_EMAIL` | Email akun administrator awal | `admin@sportshop.dev` |
-| `SEED_ADMIN_PASSWORD` | Password akun administrator awal | `Admin123!` |
-| `SEED_DEMO_DATA` | Flag otomatis mengisi data demo katalog | `true` (di override dev) |
-| `Order__ExpiryHours` | Batas kedaluwarsa pesanan yang belum dibayar | `24` |
+| **`SportShop.Domain`** | Enterprise business rules, Entities, Aggregates, Value Objects, Domain Exceptions, Domain Enums (`OrderStatus`, `StockReason`). | **Zero external dependencies.** No EF Core, no ASP.NET, no serialization annotations. |
+| **`SportShop.Application`** | Use case handlers, Command/Query models, DTOs, Repository interfaces (`IOrderRepository`, `IPaymentGateway`), FluentValidation validators, Riok.Mapperly compile-time mappers. | No direct database context, no raw HTTP client implementations, no direct framework dependencies. |
+| **`SportShop.Infrastructure`** | EF Core `AppDbContext`, PostgreSQL entity configurations, Redis distributed caching, Hangfire recurrent jobs, Midtrans API client with Polly HTTP resilience, SMTP Mail client. | Implements interfaces defined in `Application`. Contains zero core business rules. |
+| **`SportShop.Api`** | Thin REST controllers, JWT middleware, RFC 7807 ProblemDetails exception handling, Dependency Injection root, Swagger / OpenAPI documentation, HealthChecks. | Translates HTTP requests to Application commands, returns standardized responses. |
 
 ---
 
-## Migrasi Database & Seeding Data
+## Order Lifecycle & State Machine
 
-Basis data dikelola menggunakan Entity Framework Core migrations di dalam proyek `SportShop.Infrastructure`.
+Order state management follows a deterministic state machine. Illegal status progressions are rejected at the Domain level, ensuring complete transactional consistency.
 
-### Menjalankan Migrasi Manual
-```bash
-# Menambah migrasi baru (dari folder backend)
-dotnet ef migrations add <NamaMigrasi> -p src/SportShop.Infrastructure -s src/SportShop.Api
-
-# Mengaplikasikan migrasi ke basis data
-dotnet ef database update -p src/SportShop.Infrastructure -s src/SportShop.Api
+```mermaid
+stateDiagram-v2
+    [*] --> PendingPayment : Customer Checkout (Stock Reserved Atomically)
+    
+    PendingPayment --> Paid : Webhook 'settlement' / Polling Reconciled
+    PendingPayment --> Cancelled : Customer / Admin Cancels (Stock Restored +1x)
+    PendingPayment --> Expired : Unpaid Timeout / Webhook 'expire' (Stock Restored +1x)
+    
+    Paid --> Processing : Admin Starts Fulfillment Packing
+    Processing --> Shipped : Admin Ships Order (Input Courier & Tracking #)
+    Processing --> Cancelled : Admin Out-of-Stock Cancel (Stock Restored +1x)
+    
+    Shipped --> Completed : Order Delivered / Customer Confirmed
+    
+    Completed --> [*]
+    Cancelled --> [*]
+    Expired --> [*]
 ```
 
-### Auto-Migration & Seeding
-Secara default saat container dijalankan dengan environment `AutoMigrate=true`, aplikasi akan:
-1. Memastikan migrasi EF Core terbaru terpasang di database secara otomatis saat booting.
-2. Melakukan seed peran bawaan (`Admin`, `Customer`).
-3. Membuat akun admin awal berdasarkan `SEED_ADMIN_EMAIL` dan `SEED_ADMIN_PASSWORD`.
-4. Jika `SEED_DEMO_DATA=true`, sistem akan melakukan seed kategori hierarkis, brand olahraga ternama, dan puluhan varian produk beserta stok awalnya.
+### Stock Concurrency & Atomic Reservation
+
+To prevent race conditions during high-concurrency flash sales, stock reservation bypasses naive read-then-write mechanisms and executes an atomic conditional PostgreSQL statement:
+
+$$\text{Available Stock} = \text{Current Stock} - \text{Requested Quantity} \quad \text{where} \quad \text{Current Stock} \ge \text{Requested Quantity}$$
+
+```csharp
+// Atomically executed inside a database transaction:
+UPDATE product_variants 
+SET stock_quantity = stock_quantity - @quantity
+WHERE id = @variantId AND stock_quantity >= @quantity;
+```
+
+If the row count affected is zero, the transaction rolls back immediately and returns an `RFC 7807` `409 Conflict` payload with error code `inventory.insufficient_stock`.
 
 ---
 
-## Panduan Pengujian End-to-End Sandbox Midtrans
+## Database Design & Schema
 
-Platform SportShop telah terintegrasi penuh dengan Midtrans Snap API menggunakan alur pembayaran aman, verifikasi signature SHA512 waktu-konstan, dan penanganan webhook yang idempoten.
+PostgreSQL 17 serves as the system of record, configured with strict referential integrity, foreign key cascading guards, snake_case column mapping, and database-level unique indexes.
 
-### 1. Konfigurasi Kunci API & Webhook Tunnel
+```mermaid
+erDiagram
+    USERS ||--o{ REFRESH_TOKENS : owns
+    USERS ||--o{ ADDRESSES : saves
+    USERS ||--o{ CARTS : maintains
+    USERS ||--o{ ORDERS : places
+    
+    CATEGORIES ||--o{ CATEGORIES : "parent-child"
+    CATEGORIES ||--o{ PRODUCTS : categorizes
+    BRANDS ||--o{ PRODUCTS : manufactures
+    PRODUCTS ||--|{ PRODUCT_VARIANTS : contains
+    
+    CARTS ||--o{ CART_ITEMS : includes
+    PRODUCT_VARIANTS ||--o{ CART_ITEMS : references
+    
+    SHIPPING_RATES ||--o{ ADDRESSES : validates
+    SHIPPING_RATES ||--o{ ORDERS : rates
+    
+    ORDERS ||--|{ ORDER_ITEMS : contains
+    ORDERS ||--o{ ORDER_STATUS_HISTORIES : tracks
+    ORDERS ||--o{ PAYMENT_NOTIFICATIONS : logs
+    
+    PRODUCT_VARIANTS ||--o{ INVENTORY_MOVEMENTS : audits
+    ORDERS ||--o{ INVENTORY_MOVEMENTS : triggers
+```
 
-1. **Dapatkan Kunci Sandbox**:
-   - Masuk ke [Midtrans Sandbox MAP](https://dashboard.sandbox.midtrans.com/).
-   - Buka menu **Settings** &rarr; **Access Keys**.
-   - Salin **Client Key** dan **Server Key**.
-   - Simpan pada `.env` atau jalankan via .NET User Secrets:
-     ```bash
-     dotnet user-secrets set "Midtrans:ServerKey" "SB-Mid-server-xxxx" -p backend/src/SportShop.Api
-     dotnet user-secrets set "Midtrans:ClientKey" "SB-Mid-client-xxxx" -p backend/src/SportShop.Api
-     ```
-
-2. **Ekspos Webhook Lokal**:
-   Gunakan Cloudflare Tunnel atau ngrok untuk menerima webhook callback dari server Midtrans:
-   ```bash
-   # Opsi A: Cloudflare Tunnel (bebas batasan sesi)
-   cloudflared tunnel --url http://localhost:5080
-
-   # Opsi B: ngrok
-   ngrok http 5080
-   ```
-
-3. **Atur Notification URL di Midtrans**:
-   Pada dashboard Midtrans **Settings** &rarr; **Configuration**:
-   - **Payment Notification URL**: `https://<tunnel-anda>/api/v1/payments/midtrans/notification`
-   - **Finish Redirect URL**: `http://localhost:5173/checkout/status/{order_id}`
-   - **Unfinish Redirect URL**: `http://localhost:5173/checkout/status/{order_id}`
-   - **Error Redirect URL**: `http://localhost:5173/checkout/status/{order_id}`
-
----
-
-### 2. Simulator & Pembayaran Sandbox
-
-Gunakan [Midtrans Payment Simulator](https://simulator.sandbox.midtrans.com/) untuk mensimulasikan berbagai metode bayar:
-- **Virtual Account (BCA/BNI/BRI/Mandiri/Permata)**: Salin nomor VA dari popup Snap ke simulator lalu klik Inquire & Pay.
-- **QRIS / GoPay**: Scan QR kode menggunakan simulator QRIS.
-- **Kartu Kredit Testing**:
-  - No Kartu: `4811 1111 1111 1114`
-  - Masa Berlaku: Bulan/Tahun masa depan (mis. `12/28`)
-  - CVV: `123`
-  - OTP 3D-Secure: `112233`
+### Core Data Integrity Rules
+- **Order Items Immutability**: Product title, SKU, variant size/color, and unit price are snapshotted into `order_items` at checkout time. Future price or catalog adjustments never alter historical records.
+- **Financial Precision**: All monetary calculations utilize C# `decimal` and PostgreSQL `numeric(18,2)` before integer rounding for Midtrans IDR transactions.
+- **Optimistic Concurrency**: Aggregates utilize PostgreSQL system column concurrency checks (`xmin`) to eliminate lost-update anomalies.
 
 ---
 
-### 3. Checklist Skenario Pengujian Midtrans
+## Midtrans Payment Gateway Integration
 
-| Status | Skenario | Langkah Pengujian | Perilaku & Hasil yang Diharapkan |
-|:---:|---|---|---|
-| [x] | **Skenario 1: Pembayaran Sukses (Settlement)** | 1. Customer checkout order.<br>2. Aplikasi memanggil `POST /api/v1/orders/checkout` & menerima Snap token.<br>3. Bayar via simulator.<br>4. Webhook mengirim `settlement`. | - Signature SHA512 diverifikasi konstan waktu.<br>- Status pesanan beralih: `PendingPayment` &rarr; `Paid`.<br>- Stok produk tetap berkurang (reason `Sale`).<br>- Hangfire job `SendEmailJob (OrderPaid)` ter-enqueue & email terlihat di Mailpit. |
-| [x] | **Skenario 2: Pembayaran Kedaluwarsa (Expire)** | 1. Customer checkout order.<br>2. Biarkan transaksi kedaluwarsa atau picu status `expire` di simulator.<br>3. Webhook menerima `expire` (atau `ExpireUnpaidOrdersJob` berjalan). | - Status pesanan beralih: `PendingPayment` &rarr; `Expired`.<br>- Stok semua varian item pesanan dikembalikan secara atomik (`RestoreStockAtomicAsync`).<br>- `InventoryMovement` tercatat dengan reason `Expire`. |
-| [x] | **Skenario 3: Pembatalan Transaksi (Cancel)** | 1. Customer membatalkan pembayaran di Snap atau via Midtrans dashboard.<br>2. Webhook menerima `cancel`. | - Status pesanan beralih: `PendingPayment` &rarr; `Cancelled`.<br>- Stok dikembalikan secara atomik ke kuantitas semula.<br>- `InventoryMovement` tercatat dengan reason `Cancel`. |
-| [x] | **Skenario 4: Idempotensi & Duplikasi Webhook** | 1. Simulasikan pengiriman webhook yang sama berulang kali (2x atau lebih). | - Dedup key mendeteksi notifikasi duplikat.<br>- Sistem mengembalikan HTTP 200 OK.<br>- Tidak ada perubahan status ganda atau pengiriman email ganda. |
-| [x] | **Skenario 5: Rekonsiliasi Otomatis (ReconcilePaymentsJob)** | 1. Simulasikan webhook mati saat bayar di simulator.<br>2. Jalankan background job rekonsiliasi. | - Job memindai transaksi pending > 15 menit.<br>- Job memanggil Midtrans Status API (`GET /v2/{order_id}/status`).<br>- Status pesanan lokal otomatis diperbarui ke `Paid`. |
-| [x] | **Skenario 6: Deteksi Mismatch Nominal** | 1. Kirim notifikasi manipulasi nominal (`gross_amount` berbeda). | - Terdeteksi selisih nominal > 0.01.<br>- Status pesanan tidak diubah.<br>- Insiden mismatch tercatat pada `payment_notifications` dan log Seq. |
+SportShop implements production-grade defensive integration with **Midtrans Snap**:
+
+```
+[Customer Browser] ──(1) Checkout /api/v1/orders/checkout──► [SportShop API]
+       ▲                                                          │
+       │ (2) Snap Token & Redirect URL                            ▼
+       │                                                 [Midtrans Snap Engine]
+       ▼                                                          │
+[Midtrans Snap Popup] ───(3) Customer Pays via Simulator          │
+                                                                  ▼
+[Midtrans Webhook Server] ──(4) HTTP POST Notification──► [SportShop Webhook API]
+                                                                  │
+                                                          (Constant-Time SHA512)
+                                                          (Anti-Replay Verification)
+                                                                  ▼
+                                                      [Atomic Status Update: Paid]
+```
+
+### Webhook Security Architecture
+1. **Constant-Time Cryptographic Verification**:
+   The webhook payload signature is calculated and verified in constant time to prevent side-channel timing attacks:
+   $$\text{Signature} = \text{SHA512}(\text{OrderId} + \text{StatusCode} + \text{GrossAmount} + \text{ServerKey})$$
+2. **Replay Attack & Duplicate Protection**:
+   Incoming notifications are persisted into `payment_notifications`. Unique composite constraints on `(order_id, transaction_id, status_code)` guarantee idempotent execution even under aggressive network retry policies.
+3. **Out-of-Order Safety**:
+   If an out-of-order notification arrives (e.g., `pending` arriving after `settlement`), the domain state machine ignores regressions and maintains the terminal `Paid` status.
+4. **Automated Status Reconciliation**:
+   `ReconcilePaymentsJob` runs periodically via Hangfire to poll Midtrans Core API for transactions left pending due to dropped network callbacks.
 
 ---
 
-## Menjalankan Pengujian Otomatis (Testing)
+## Key Features
 
-### Testing Backend (.NET)
-Backend dilengkapi pengujian unit komprehensif pada Domain dan Application, serta pengujian integrasi end-to-end menggunakan **Testcontainers** (kontainer PostgreSQL dan Redis otomatis dibuat saat pengetesan).
+### Customer Experience (Storefront)
+- 🛍️ **Catalog Browsing & Search**: Real-time faceted search by category hierarchy, brand, price range, and in-stock availability.
+- ⚡ **Optimistic Cart & Live Stock Warnings**: Persistent cart with automatic visual alerts when item prices change or stock becomes insufficient.
+- 📍 **Weight-Based Flat Shipping**: Regional rate engine calculating exact shipping tariffs based on destination province and aggregated cart weight (1 kg threshold with ceiling rounding).
+- 💳 **Seamless Midtrans Snap Checkout**: Integrated modal supporting Virtual Accounts (BCA, BNI, BRI, Mandiri, Permata), QRIS / GoPay, and 3D-Secure Credit Cards.
+- 📦 **Order Tracking & Cancellation**: Self-service tracking with real-time status timelines and 1-click order cancellation before payment.
+
+### Merchant & Operations (Admin Panel)
+- 📊 **Executive KPI Dashboard**: Real-time analytics on gross revenue, active orders, conversion rates, and stock deficit alerts.
+- 📦 **Catalog & Inventory Control**: Comprehensive management of categories, brands, variants (size, color, SKU), image uploads (MIME & size validated), and atomic stock adjustments.
+- 🚚 **Fulfillment Operations**: Order processing lifecycle, courier assignment, tracking number injection, and dispatch management.
+- ⚙️ **Tariff Administration**: Province-based flat shipping rate configuration with automatic cache invalidation.
+
+---
+
+## Tech Stack & Decision Matrix
+
+| Domain | Technology | Justification |
+|---|---|---|
+| **Runtime & Language** | C# 12 / .NET 8 (LTS) | High-throughput asynchronous runtime, memory efficiency, and native AoT / container optimizations. |
+| **Web API Framework** | ASP.NET Core Web API | Production-proven HTTP pipeline, built-in rate limiting, and dependency injection. |
+| **Object-Relational Mapper** | Entity Framework Core 8 | Native PostgreSQL LINQ translations, robust migration management, and compile-time query verification. |
+| **Database** | PostgreSQL 17 | Enterprise ACID compliance, robust indexing (`GIN`, `BTREE`), and row-level concurrency locking. |
+| **Caching Layer** | Redis 7 | Sub-millisecond read latency for catalog caching, distributed locking, and cache-aside patterns. |
+| **Background Processing** | Hangfire | Reliable persistent background jobs stored in PostgreSQL with built-in dashboard and automated retries. |
+| **Observability** | Serilog + OpenTelemetry + Seq | Structured JSON logs enriched with correlation IDs, tracing EF Core and outbound HTTP calls. |
+| **Frontend Framework** | React 18 + TypeScript (Strict) | Type-safe UI components, predictable state flow, and zero runtime type errors. |
+| **State & Data Fetching** | TanStack Query v5 + Zustand | Separation of server state (caching, revalidation) and client UI state (drawer, auth tokens). |
+| **Styling & UI Kit** | Tailwind CSS + shadcn/ui | Atomic CSS with high-performance CSS bundle sizes and accessible headless UI primitives. |
+
+---
+
+## Quickstart & Developer Experience
+
+### System Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine 24+ and Docker Compose v2)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) *(only required for bare-metal local development)*
+- [Node.js 20+ & npm](https://nodejs.org/) *(only required for bare-metal frontend development)*
+
+---
+
+### Option 1: One-Click Docker Compose (Recommended)
+
+Get the entire production-grade ecosystem (API, Web, DB, Redis, Seq, Hangfire, Mailpit) running in under 5 minutes:
 
 ```bash
-# Masuk ke direktori backend
+# 1. Clone the repository
+git clone https://github.com/bintangnugrahaa/sportshop.git
+cd sportshop
+
+# 2. Copy the preconfigured development environment
+cp .env.example .env
+
+# 3. Spin up all containerized services
+docker compose up -d --build
+```
+
+#### Service Port Reference
+
+| Service | Local Address | Credentials | Purpose |
+|---|---|---|---|
+| **Frontend Web App** | [http://localhost:5173](http://localhost:5173) | — | Customer Storefront & Admin Portal |
+| **ASP.NET Core Web API** | [http://localhost:5080](http://localhost:5080) | — | RESTful API Endpoints |
+| **Swagger / OpenAPI** | [http://localhost:5080/swagger](http://localhost:5080/swagger) | — | Interactive API Documentation |
+| **Hangfire Dashboard** | [http://localhost:5080/hangfire](http://localhost:5080/hangfire) | *Admin Only* | Background Job Orchestration |
+| **Seq Observability** | [http://localhost:5341](http://localhost:5341) | — | Structured Logs & OpenTelemetry Traces |
+| **Mailpit Inbox** | [http://localhost:8025](http://localhost:8025) | — | Transactional Email Interceptor |
+| **PostgreSQL Database** | `localhost:5432` | `postgres` / `postgres` | Primary Database (`sportshop`) |
+| **Redis Cache** | `localhost:6379` | — | In-Memory Distributed Cache |
+
+#### Default Seed Data
+- **Administrator**: `admin@sportshop.dev` / `Admin123!`
+- **Demo Catalog**: Automatically seeds ~30 sports products across categories (Shoes, Jerseys, Rackets, Balls, Accessories) with multiple variants, SKUs, and stock quantities.
+
+---
+
+### Option 2: Bare-Metal Development
+
+Run backend and frontend directly on the host with hot-reloading while keeping backing services in Docker:
+
+```bash
+# 1. Start backing services only
+docker compose up -d db redis seq mailpit
+
+# 2. Launch Backend API
+cd backend
+dotnet restore
+dotnet run --project src/SportShop.Api
+
+# 3. Launch Frontend App (in a separate terminal)
+cd frontend
+npm ci
+npm run dev
+```
+
+---
+
+## Environment Variables Reference
+
+| Variable | Description | Default Dev Value |
+|---|---|---|
+| `POSTGRES_USER` | PostgreSQL superuser username | `postgres` |
+| `POSTGRES_PASSWORD` | PostgreSQL superuser password | `postgres` |
+| `POSTGRES_DB` | Application database name | `sportshop` |
+| `ConnectionStrings__Default` | ADO.NET connection string | `Host=db;Port=5432;Database=sportshop;Username=postgres;Password=postgres;` |
+| `Redis__ConnectionString` | Redis host and port | `redis:6379` |
+| `Jwt__Key` | Secret key for signing HMAC-SHA256 JWTs (&ge; 32 chars) | *(Secure dev string)* |
+| `Jwt__Issuer` | Valid JWT issuer | `SportShopApi` |
+| `Jwt__Audience` | Valid JWT audience | `SportShopClient` |
+| `Midtrans__ServerKey` | Midtrans Sandbox Server Key | `SB-Mid-server-xxxx` |
+| `Midtrans__ClientKey` | Midtrans Sandbox Client Key | `SB-Mid-client-xxxx` |
+| `Midtrans__IsProduction` | Toggle between Sandbox and Production gateway | `false` |
+| `Cors__Origins` | Allowed origins for CORS policy (comma-separated) | `http://localhost:5173,http://localhost:80` |
+| `Seq__ServerUrl` | Seq ingestion endpoint for Serilog | `http://seq:5341` |
+| `Otel__OtlpEndpoint` | OpenTelemetry OTLP collector endpoint | `http://seq:5341/ingest/otlp` |
+| `Smtp__Host` | SMTP server host | `mailpit` |
+| `Smtp__Port` | SMTP port | `1025` |
+| `SEED_ADMIN_EMAIL` | Bootstrap admin account email | `admin@sportshop.dev` |
+| `SEED_ADMIN_PASSWORD` | Bootstrap admin account password | `Admin123!` |
+| `SEED_DEMO_DATA` | Automatically populate demo products on startup | `true` |
+
+---
+
+## Midtrans Payment Gateway Integration
+
+### 1. Setup Sandbox Keys & Webhook Tunneling
+
+1. Retrieve your API keys from the [Midtrans Sandbox Dashboard](https://dashboard.sandbox.midtrans.com/) (**Settings** &rarr; **Access Keys**).
+2. Expose your local backend webhook endpoint via Cloudflare Tunnel or ngrok:
+   ```bash
+   # Expose port 5080
+   cloudflared tunnel --url http://localhost:5080
+   # or: ngrok http 5080
+   ```
+3. Set the **Payment Notification URL** in Midtrans Settings &rarr; Configuration to:
+   `https://<your-tunnel-subdomain>/api/v1/payments/midtrans/notification`
+
+### 2. Sandbox Payment Simulator
+
+Use the official [Midtrans Simulator](https://simulator.sandbox.midtrans.com/) to complete payments:
+- **Virtual Account**: Copy the VA number from the Snap popup into the simulator and submit payment.
+- **QRIS / GoPay**: Scan the generated QR code using the simulator's QR scanner.
+- **Credit Card Test Credentials**:
+  - Card Number: `4811 1111 1111 1114`
+  - Expiry: Any future date (e.g., `12/28`)
+  - CVV: `123`
+  - 3D Secure OTP: `112233`
+
+---
+
+## Testing & Quality Assurance
+
+SportShop is backed by rigorous test automation across all layers:
+
+```
+Testing Suite Hierarchy:
+┌────────────────────────────────────────────────────────┐
+│  Integration Tests: WebApplicationFactory +            │
+│  Testcontainers (Real PostgreSQL 17 + Redis 7 instances)│
+├────────────────────────────────────────────────────────┤
+│  Application Tests: Use case handlers, FluentValidation│
+│  business rules, Riok.Mapperly DTO mapping             │
+├────────────────────────────────────────────────────────┤
+│  Domain Tests: Pure unit tests on Entities, Value      │
+│  Objects, Stock invariants, and State Transitions      │
+├────────────────────────────────────────────────────────┤
+│  Frontend Tests: Vitest, React Testing Library,        │
+│  Zod schemas, and Axios interceptor suites             │
+└────────────────────────────────────────────────────────┘
+```
+
+### Running Backend Tests (.NET)
+
+Integration tests dynamically spin up isolated PostgreSQL and Redis Docker containers via **Testcontainers**—guaranteeing 100% parity with production behavior:
+
+```bash
 cd backend
 
-# Jalankan seluruh suite pengujian
+# Execute all Unit and Integration tests
 dotnet test --verbosity normal
 
-# Menjalankan pengujian dengan kalkulasi code coverage
+# Run tests with code coverage analysis
 dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
 ```
 
-Target cakupan kode minimum:
-- Domain layer: &ge; 90%
-- Application layer: &ge; 80%
+*Quality Standards Enforced:*
+- `SportShop.Domain.Tests`: **100% pass rate** (&ge; 90% code coverage target)
+- `SportShop.Application.Tests`: **100% pass rate** (&ge; 80% code coverage target)
+- `SportShop.Api.IntegrationTests`: **100% pass rate** across all API flows
 
-### Testing Frontend (React + Vitest)
-Frontend mencakup pengujian unit skema Zod, komponen UI kompleks (`VariantSelector`, keranjang optimis, form auth), dan interceptor Axios:
+### Running Frontend Tests (Vitest)
 
 ```bash
-# Masuk ke direktori frontend
 cd frontend
 
-# Jalankan unit & integration tests Vitest
+# Run test suite
 npm run test
 
-# Jalankan typecheck TypeScript
+# Type checking & ESLint
 npm run typecheck
-
-# Jalankan linter ESLint
 npm run lint
 
-# Buat build rilis
+# Production build verification
 npm run build
 ```
 
 ---
 
-## Observabilitas & Monitoring Lokal
+## Observability & SRE
 
-SportShop dilengkapi telemetri terpadu untuk monitoring performa dan debugging insiden:
+SportShop incorporates comprehensive Site Reliability Engineering (SRE) primitives:
 
-1. **Seq Log & Trace Aggregator (`http://localhost:5341`)**:
-   - Seluruh log terstruktur Serilog diperkaya dengan `CorrelationId`, `UserId`, `OrderNumber`, dan `ClientIp`.
-   - Jejak terdistribusi OpenTelemetry menampilkan kueri EF Core, durasi panggilan database, dan pemanggilan HTTP Midtrans.
-
-2. **Pemeriksaan Kesehatan (Health Checks)**:
-   - Live endpoint: `GET /health/live` (mengecek proses aplikasi aktif).
-   - Ready endpoint: `GET /health/ready` (memvalidasi konektivitas PostgreSQL, Redis, dan Hangfire Server).
-
-3. **Hangfire Background Job Dashboard (`http://localhost:5080/hangfire`)**:
-   - Dapat diakses oleh pengguna dengan role **Admin**.
-   - Menampilkan status eksekusi:
-     - `ExpireUnpaidOrdersJob`: Membatalkan pesanan kedaluwarsa setiap 15 menit.
-     - `ReconcilePaymentsJob`: Menyelaraskan status pembayaran yang tertunda.
-     - `CleanupJob`: Membersihkan token usang dan file sampah berkala.
+- **Structured Log Enrichment**: Logs emitted via Serilog include `TraceId`, `SpanId`, `CorrelationId`, `UserId`, `ClientIp`, and `OrderNumber`.
+- **Distributed Tracing**: OpenTelemetry traces database queries (EF Core), Redis commands, and outbound HTTP transactions to Midtrans.
+- **Health Probes**:
+  - `GET /health/live`: Liveness probe for orchestrators (Kubernetes/Docker).
+  - `GET /health/ready`: Readiness probe validating PostgreSQL connection pool, Redis ping, and Hangfire worker status.
+- **Background Worker Monitoring**: Hangfire dashboard provides real-time visibility into queue depth, failed jobs, and execution retries.
 
 ---
 
-## Panduan Rilis Produksi (Docker Compose)
+## Security & Hardening
 
-Untuk menggelar aplikasi di lingkungan server produksi (*staging* / *production*):
+The codebase complies with **OWASP Application Security Verification Standard (ASVS) Level 2**:
 
-1. **Siapkan konfigurasi produksi**:
-   ```bash
-   cp .env.production.example .env.production
-   nano .env.production
-   ```
-   *Wajib mengisi password database kuat, secret JWT minimal 64 karakter, Midtrans Production Keys (`Midtrans__IsProduction=true`), domain CORS asli, dan konfigurasi SMTP produksi.*
+- **Authentication & Token Lifecycle**: Access tokens (15-min TTL) coupled with DB-persisted, cryptographically hashed refresh tokens (7-day TTL). Automated token rotation with reuse detection terminates active sessions upon detected anomalies.
+- **Resource Ownership Authorization**: Strict ownership validation ensures customers cannot query, mutate, or inspect other users' carts, orders, or addresses.
+- **RFC 7807 ProblemDetails**: Machine-readable error payloads preventing stack trace leakage while providing clear error codes.
+- **Container Hardening**: Docker images run as unprivileged users (`USER $APP_UID` in .NET runtime, `nginxinc/nginx-unprivileged` in frontend) preventing container-breakout escalation.
+- **Network Defenses**: Rate limiting on sensitive endpoints (Auth, Checkout), strict CORS policies, and HTTP security headers (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`).
 
-2. **Jalankan tumpukan kontainer produksi**:
-   ```bash
-   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
-   ```
+---
 
-3. **Verifikasi status kesehatan**:
-   ```bash
-   docker compose -f docker-compose.prod.yml ps
-   curl -f http://localhost:80/healthz
-   curl -f http://localhost:80/api/v1/health/ready
-   ```
+## Continuous Integration & Deployment (CI/CD)
 
-Aplikasi siap melayani trafik pelanggan dengan keamanan non-root container, reverse proxy Nginx yang teroptimasi, dan persistensi database yang tangguh.
+GitHub Actions workflows continuously validate and package the repository:
+
+- **CI Backend (`ci-backend.yml`)**: Automates restore, compilation with `--warnaserror`, formatting verification with `dotnet format`, unit and integration testing with code coverage reporting.
+- **CI Frontend (`ci-frontend.yml`)**: Enforces ESLint rules, TypeScript strict compilation, Vitest test execution, and production bundling.
+- **Docker Images (`docker.yml`)**: Builds multi-stage production images and publishes them to GitHub Container Registry (GHCR) upon release tags and pushes to `main`.
+- **CodeQL Security (`codeql.yml`)**: Advanced static security analysis scanning for SQL injection, CSRF, insecure deserialization, and memory safety flaws.
+
+---
+
+## Engineering Guidelines & Contributions
+
+1. **Commit Conventions**: All commits adhere to [Conventional Commits](https://www.conventionalcommits.org/):
+   - `feat(orders): implement stock reservation on checkout`
+   - `fix(auth): prevent refresh token reuse anomaly`
+   - `docs(api): update swagger schemas for shipping quotes`
+2. **Pull Request Protocol**:
+   - Ensure all CI checks (Backend, Frontend, Docker, CodeQL) are green.
+   - Accompany bug fixes with a regression test.
+   - Maintain zero compiler warnings (`TreatWarningsAsErrors=true`).
+
+---
+
+## License
+
+This project is licensed under the terms of the [MIT License](LICENSE).
