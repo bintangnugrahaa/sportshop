@@ -1,0 +1,121 @@
+# Docker Compose configuration for SportShop Production environment
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: sportshop-db-prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password required}
+      POSTGRES_DB: ${POSTGRES_DB:-sportshop}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-sportshop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  redis:
+    image: redis:7-alpine
+    container_name: sportshop-redis-prod
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Redis password required}"]
+    volumes:
+      - redisdata_prod:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  seq:
+    image: datalust/seq:latest
+    container_name: sportshop-seq-prod
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: ${SEQ_ADMIN_PASSWORD_HASH:-}
+    volumes:
+      - seqdata_prod:/data
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sportshop-api-prod
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      AutoMigrate: "true"
+      SEED_DEMO_DATA: "false"
+      ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB:-sportshop};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:?DB password required}
+      Redis__ConnectionString: redis:6379,password=${REDIS_PASSWORD:?Redis password required}
+      Jwt__Key: ${Jwt__Key:?JWT Secret Key required}
+      Jwt__Issuer: ${Jwt__Issuer:-SportShopApi}
+      Jwt__Audience: ${Jwt__Audience:-SportShopClient}
+      Midtrans__ServerKey: ${Midtrans__ServerKey:?Midtrans Server Key required}
+      Midtrans__ClientKey: ${Midtrans__ClientKey:?Midtrans Client Key required}
+      Midtrans__IsProduction: "true"
+      Cors__Origins: ${Cors__Origins:?Production CORS origins required}
+      Seq__ServerUrl: http://seq:5341
+      Otel__OtlpEndpoint: http://seq:5341/ingest/otlp
+      Smtp__Host: ${Smtp__Host:?SMTP host required}
+      Smtp__Port: ${Smtp__Port:-587}
+      Smtp__User: ${Smtp__User:-}
+      Smtp__Password: ${Smtp__Password:-}
+      Smtp__From: ${Smtp__From:-no-reply@sportshop.id}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@sportshop.id}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Admin password required}
+      Order__ExpiryHours: ${Order__ExpiryHours:-24}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads_prod:/app/wwwroot/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sportshop-web-prod
+    ports:
+      - "${PORT_HTTP:-80}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+volumes:
+  pgdata_prod:
+  redisdata_prod:
+  seqdata_prod:
+  uploads_prod:
