@@ -145,7 +145,7 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | ✓ | ID | Tugas | Dep | Ukuran | Kriteria penerimaan |
 |---|---|---|---|---|---|
 | [x] | T11-01 | Dockerfile produksi (multi-stage, non-root), Nginx untuk frontend, compose produksi contoh | T0-04 | M | Image kecil; `docker compose -f ... up` jalan |
-| [ ] | T11-02 | Workflow `docker.yml` push ke GHCR pada tag | T11-01, T0-05 | S | Tag `v0.1.0` menghasilkan image |
+| [x] | T11-02 | Workflow `docker.yml` push ke GHCR pada tag | T11-01, T0-05 | S | Tag `v0.1.0` menghasilkan image |
 | [ ] | T11-03 | README lengkap: setup lokal, variabel env, akun Midtrans Sandbox + URL webhook (mis. ngrok/Cloudflare Tunnel), menjalankan test | semua | M | Developer baru berjalan < 15 menit |
 | [ ] | T11-04 | UAT skenario penuh (sandbox): beli → bayar → proses → kirim → selesai; kedaluwarsa; batal; webhook duplikat | semua | M | Semua skenario lulus; hasil dicatat |
 | [ ] | T11-05 | Checklist go-live: ganti key Midtrans produksi, `IsProduction=true`, secret, CORS, backup DB, monitoring Seq | T11-04 | S | Checklist ditandatangani |
