@@ -148,20 +148,20 @@ Rekomendasi urutan besar: `F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 �
 | [x] | T11-02 | Workflow `docker.yml` push ke GHCR pada tag | T11-01, T0-05 | S | Tag `v0.1.0` menghasilkan image |
 | [x] | T11-03 | README lengkap: setup lokal, variabel env, akun Midtrans Sandbox + URL webhook (mis. ngrok/Cloudflare Tunnel), menjalankan test | semua | M | Developer baru berjalan < 15 menit |
 | [x] | T11-04 | UAT skenario penuh (sandbox): beli → bayar → proses → kirim → selesai; kedaluwarsa; batal; webhook duplikat | semua | M | Semua skenario lulus; hasil dicatat |
-| [ ] | T11-05 | Checklist go-live: ganti key Midtrans produksi, `IsProduction=true`, secret, CORS, backup DB, monitoring Seq | T11-04 | S | Checklist ditandatangani |
+| [x] | T11-05 | Checklist go-live: ganti key Midtrans produksi, `IsProduction=true`, secret, CORS, backup DB, monitoring Seq | T11-04 | S | Checklist ditandatangani |
 
 ---
 
 ## Pengujian Kunci yang Wajib Ada (ringkasan lintas-fase)
 
-- [ ] Transisi status pesanan (tabel lengkap) — T5-01
-- [ ] Tidak ada overselling pada 50 checkout paralel — T5-04
-- [ ] Pembatalan/kedaluwarsa mengembalikan stok tepat sekali — T5-05, T5-06
-- [ ] Signature webhook salah ditolak; notifikasi duplikat dan tak berurutan aman — T6-04
-- [ ] Rotasi refresh token dan deteksi reuse — T2-04
-- [ ] Customer tidak dapat mengakses data customer lain — T2-07, T4-05, T5-05
-- [ ] Rumus ongkir (batas 1 kg, pembulatan ke atas) — T4-03
-- [ ] Redis mati tidak mematikan API — T1-07
+- [x] Transisi status pesanan (tabel lengkap) — T5-01
+- [x] Tidak ada overselling pada 50 checkout paralel — T5-04
+- [x] Pembatalan/kedaluwarsa mengembalikan stok tepat sekali — T5-05, T5-06
+- [x] Signature webhook salah ditolak; notifikasi duplikat dan tak berurutan aman — T6-04
+- [x] Rotasi refresh token dan deteksi reuse — T2-04
+- [x] Customer tidak dapat mengakses data customer lain — T2-07, T4-05, T5-05
+- [x] Rumus ongkir (batas 1 kg, pembulatan ke atas) — T4-03
+- [x] Redis mati tidak mematikan API — T1-07
 
 ## Definisi Rilis MVP
 
