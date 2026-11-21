@@ -69,7 +69,7 @@ describe('Admin Framework & Dashboard (T10-07)', () => {
     useAuthStore.setState({
       user: {
         id: 'admin-1',
-        email: 'admin@sportshop.dev',
+        email: 'admin@sportshop.com',
         fullName: 'Administrator Toko',
         role: 'Admin',
       },
@@ -82,7 +82,7 @@ describe('Admin Framework & Dashboard (T10-07)', () => {
     render(
       <MemoryRouter>
         <AdminLayout />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText('Admin Panel')).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe('Admin Framework & Dashboard (T10-07)', () => {
         <MemoryRouter>
           <AdminDashboardPage />
         </MemoryRouter>
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     expect(screen.getByText('Dashboard Ringkasan')).toBeInTheDocument();

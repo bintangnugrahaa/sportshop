@@ -62,7 +62,7 @@ public class TestcontainersHealthCheckTests : IClassFixture<CustomWebApplication
 
         // Admin token
         var adminId = Guid.NewGuid();
-        var adminToken = AuthTestHelper.GenerateAdminToken(adminId, "admin@sportshop.dev");
+        var adminToken = AuthTestHelper.GenerateAdminToken(adminId, "admin@sportshop.com");
         var jwtAdmin = handler.ReadJwtToken(adminToken);
 
         jwtAdmin.Claims.First(c => c.Type == "role" || c.Type == ClaimTypes.Role).Value.Should().Be("Admin");

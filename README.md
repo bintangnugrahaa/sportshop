@@ -77,12 +77,12 @@ SportShop adheres strictly to **Clean Architecture** and **Inversion of Control 
 
 ### Architectural Layering
 
-| Layer | Responsibilities | Constraints |
-|---|---|---|
-| **`SportShop.Domain`** | Enterprise business rules, Entities, Aggregates, Value Objects, Domain Exceptions, Domain Enums (`OrderStatus`, `StockReason`). | **Zero external dependencies.** No EF Core, no ASP.NET, no serialization annotations. |
-| **`SportShop.Application`** | Use case handlers, Command/Query models, DTOs, Repository interfaces (`IOrderRepository`, `IPaymentGateway`), FluentValidation validators, Riok.Mapperly compile-time mappers. | No direct database context, no raw HTTP client implementations, no direct framework dependencies. |
-| **`SportShop.Infrastructure`** | EF Core `AppDbContext`, PostgreSQL entity configurations, Redis distributed caching, Hangfire recurrent jobs, Midtrans API client with Polly HTTP resilience, SMTP Mail client. | Implements interfaces defined in `Application`. Contains zero core business rules. |
-| **`SportShop.Api`** | Thin REST controllers, JWT middleware, RFC 7807 ProblemDetails exception handling, Dependency Injection root, Swagger / OpenAPI documentation, HealthChecks. | Translates HTTP requests to Application commands, returns standardized responses. |
+| Layer                          | Responsibilities                                                                                                                                                                | Constraints                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **`SportShop.Domain`**         | Enterprise business rules, Entities, Aggregates, Value Objects, Domain Exceptions, Domain Enums (`OrderStatus`, `StockReason`).                                                 | **Zero external dependencies.** No EF Core, no ASP.NET, no serialization annotations.             |
+| **`SportShop.Application`**    | Use case handlers, Command/Query models, DTOs, Repository interfaces (`IOrderRepository`, `IPaymentGateway`), FluentValidation validators, Riok.Mapperly compile-time mappers.  | No direct database context, no raw HTTP client implementations, no direct framework dependencies. |
+| **`SportShop.Infrastructure`** | EF Core `AppDbContext`, PostgreSQL entity configurations, Redis distributed caching, Hangfire recurrent jobs, Midtrans API client with Polly HTTP resilience, SMTP Mail client. | Implements interfaces defined in `Application`. Contains zero core business rules.                |
+| **`SportShop.Api`**            | Thin REST controllers, JWT middleware, RFC 7807 ProblemDetails exception handling, Dependency Injection root, Swagger / OpenAPI documentation, HealthChecks.                    | Translates HTTP requests to Application commands, returns standardized responses.                 |
 
 ---
 
@@ -93,17 +93,17 @@ Order state management follows a deterministic state machine. Illegal status pro
 ```mermaid
 stateDiagram-v2
     [*] --> PendingPayment : Customer Checkout (Stock Reserved Atomically)
-    
+
     PendingPayment --> Paid : Webhook 'settlement' / Polling Reconciled
     PendingPayment --> Cancelled : Customer / Admin Cancels (Stock Restored +1x)
     PendingPayment --> Expired : Unpaid Timeout / Webhook 'expire' (Stock Restored +1x)
-    
+
     Paid --> Processing : Admin Starts Fulfillment Packing
     Processing --> Shipped : Admin Ships Order (Input Courier & Tracking #)
     Processing --> Cancelled : Admin Out-of-Stock Cancel (Stock Restored +1x)
-    
+
     Shipped --> Completed : Order Delivered / Customer Confirmed
-    
+
     Completed --> [*]
     Cancelled --> [*]
     Expired --> [*]
@@ -117,7 +117,7 @@ $$\text{Available Stock} = \text{Current Stock} - \text{Requested Quantity} \qua
 
 ```csharp
 // Atomically executed inside a database transaction:
-UPDATE product_variants 
+UPDATE product_variants
 SET stock_quantity = stock_quantity - @quantity
 WHERE id = @variantId AND stock_quantity >= @quantity;
 ```
@@ -136,27 +136,28 @@ erDiagram
     USERS ||--o{ ADDRESSES : saves
     USERS ||--o{ CARTS : maintains
     USERS ||--o{ ORDERS : places
-    
+
     CATEGORIES ||--o{ CATEGORIES : "parent-child"
     CATEGORIES ||--o{ PRODUCTS : categorizes
     BRANDS ||--o{ PRODUCTS : manufactures
     PRODUCTS ||--|{ PRODUCT_VARIANTS : contains
-    
+
     CARTS ||--o{ CART_ITEMS : includes
     PRODUCT_VARIANTS ||--o{ CART_ITEMS : references
-    
+
     SHIPPING_RATES ||--o{ ADDRESSES : validates
     SHIPPING_RATES ||--o{ ORDERS : rates
-    
+
     ORDERS ||--|{ ORDER_ITEMS : contains
     ORDERS ||--o{ ORDER_STATUS_HISTORIES : tracks
     ORDERS ||--o{ PAYMENT_NOTIFICATIONS : logs
-    
+
     PRODUCT_VARIANTS ||--o{ INVENTORY_MOVEMENTS : audits
     ORDERS ||--o{ INVENTORY_MOVEMENTS : triggers
 ```
 
 ### Core Data Integrity Rules
+
 - **Order Items Immutability**: Product title, SKU, variant size/color, and unit price are snapshotted into `order_items` at checkout time. Future price or catalog adjustments never alter historical records.
 - **Financial Precision**: All monetary calculations utilize C# `decimal` and PostgreSQL `numeric(18,2)` before integer rounding for Midtrans IDR transactions.
 - **Optimistic Concurrency**: Aggregates utilize PostgreSQL system column concurrency checks (`xmin`) to eliminate lost-update anomalies.
@@ -184,6 +185,7 @@ SportShop implements production-grade defensive integration with **Midtrans Snap
 ```
 
 ### Webhook Security Architecture
+
 1. **Constant-Time Cryptographic Verification**:
    The webhook payload signature is calculated and verified in constant time to prevent side-channel timing attacks:
    $$\text{Signature} = \text{SHA512}(\text{OrderId} + \text{StatusCode} + \text{GrossAmount} + \text{ServerKey})$$
@@ -199,6 +201,7 @@ SportShop implements production-grade defensive integration with **Midtrans Snap
 ## Key Features
 
 ### Customer Experience (Storefront)
+
 - 🛍️ **Catalog Browsing & Search**: Real-time faceted search by category hierarchy, brand, price range, and in-stock availability.
 - ⚡ **Optimistic Cart & Live Stock Warnings**: Persistent cart with automatic visual alerts when item prices change or stock becomes insufficient.
 - 📍 **Weight-Based Flat Shipping**: Regional rate engine calculating exact shipping tariffs based on destination province and aggregated cart weight (1 kg threshold with ceiling rounding).
@@ -206,6 +209,7 @@ SportShop implements production-grade defensive integration with **Midtrans Snap
 - 📦 **Order Tracking & Cancellation**: Self-service tracking with real-time status timelines and 1-click order cancellation before payment.
 
 ### Merchant & Operations (Admin Panel)
+
 - 📊 **Executive KPI Dashboard**: Real-time analytics on gross revenue, active orders, conversion rates, and stock deficit alerts.
 - 📦 **Catalog & Inventory Control**: Comprehensive management of categories, brands, variants (size, color, SKU), image uploads (MIME & size validated), and atomic stock adjustments.
 - 🚚 **Fulfillment Operations**: Order processing lifecycle, courier assignment, tracking number injection, and dispatch management.
@@ -215,27 +219,28 @@ SportShop implements production-grade defensive integration with **Midtrans Snap
 
 ## Tech Stack & Decision Matrix
 
-| Domain | Technology | Justification |
-|---|---|---|
-| **Runtime & Language** | C# 12 / .NET 8 (LTS) | High-throughput asynchronous runtime, memory efficiency, and native AoT / container optimizations. |
-| **Web API Framework** | ASP.NET Core Web API | Production-proven HTTP pipeline, built-in rate limiting, and dependency injection. |
-| **Object-Relational Mapper** | Entity Framework Core 8 | Native PostgreSQL LINQ translations, robust migration management, and compile-time query verification. |
-| **Database** | PostgreSQL 17 | Enterprise ACID compliance, robust indexing (`GIN`, `BTREE`), and row-level concurrency locking. |
-| **Caching Layer** | Redis 7 | Sub-millisecond read latency for catalog caching, distributed locking, and cache-aside patterns. |
-| **Background Processing** | Hangfire | Reliable persistent background jobs stored in PostgreSQL with built-in dashboard and automated retries. |
-| **Observability** | Serilog + OpenTelemetry + Seq | Structured JSON logs enriched with correlation IDs, tracing EF Core and outbound HTTP calls. |
-| **Frontend Framework** | React 18 + TypeScript (Strict) | Type-safe UI components, predictable state flow, and zero runtime type errors. |
-| **State & Data Fetching** | TanStack Query v5 + Zustand | Separation of server state (caching, revalidation) and client UI state (drawer, auth tokens). |
-| **Styling & UI Kit** | Tailwind CSS + shadcn/ui | Atomic CSS with high-performance CSS bundle sizes and accessible headless UI primitives. |
+| Domain                       | Technology                     | Justification                                                                                           |
+| ---------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Runtime & Language**       | C# 12 / .NET 8 (LTS)           | High-throughput asynchronous runtime, memory efficiency, and native AoT / container optimizations.      |
+| **Web API Framework**        | ASP.NET Core Web API           | Production-proven HTTP pipeline, built-in rate limiting, and dependency injection.                      |
+| **Object-Relational Mapper** | Entity Framework Core 8        | Native PostgreSQL LINQ translations, robust migration management, and compile-time query verification.  |
+| **Database**                 | PostgreSQL 17                  | Enterprise ACID compliance, robust indexing (`GIN`, `BTREE`), and row-level concurrency locking.        |
+| **Caching Layer**            | Redis 7                        | Sub-millisecond read latency for catalog caching, distributed locking, and cache-aside patterns.        |
+| **Background Processing**    | Hangfire                       | Reliable persistent background jobs stored in PostgreSQL with built-in dashboard and automated retries. |
+| **Observability**            | Serilog + OpenTelemetry + Seq  | Structured JSON logs enriched with correlation IDs, tracing EF Core and outbound HTTP calls.            |
+| **Frontend Framework**       | React 18 + TypeScript (Strict) | Type-safe UI components, predictable state flow, and zero runtime type errors.                          |
+| **State & Data Fetching**    | TanStack Query v5 + Zustand    | Separation of server state (caching, revalidation) and client UI state (drawer, auth tokens).           |
+| **Styling & UI Kit**         | Tailwind CSS + shadcn/ui       | Atomic CSS with high-performance CSS bundle sizes and accessible headless UI primitives.                |
 
 ---
 
 ## Quickstart & Developer Experience
 
 ### System Prerequisites
+
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine 24+ and Docker Compose v2)
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) *(only required for bare-metal local development)*
-- [Node.js 20+ & npm](https://nodejs.org/) *(only required for bare-metal frontend development)*
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) _(only required for bare-metal local development)_
+- [Node.js 20+ & npm](https://nodejs.org/) _(only required for bare-metal frontend development)_
 
 ---
 
@@ -257,19 +262,20 @@ docker compose up -d --build
 
 #### Service Port Reference
 
-| Service | Local Address | Credentials | Purpose |
-|---|---|---|---|
-| **Frontend Web App** | [http://localhost:5173](http://localhost:5173) | — | Customer Storefront & Admin Portal |
-| **ASP.NET Core Web API** | [http://localhost:5080](http://localhost:5080) | — | RESTful API Endpoints |
-| **Swagger / OpenAPI** | [http://localhost:5080/swagger](http://localhost:5080/swagger) | — | Interactive API Documentation |
-| **Hangfire Dashboard** | [http://localhost:5080/hangfire](http://localhost:5080/hangfire) | *Admin Only* | Background Job Orchestration |
-| **Seq Observability** | [http://localhost:5341](http://localhost:5341) | — | Structured Logs & OpenTelemetry Traces |
-| **Mailpit Inbox** | [http://localhost:8025](http://localhost:8025) | — | Transactional Email Interceptor |
-| **PostgreSQL Database** | `localhost:5432` | `postgres` / `postgres` | Primary Database (`sportshop`) |
-| **Redis Cache** | `localhost:6379` | — | In-Memory Distributed Cache |
+| Service                  | Local Address                                                    | Credentials             | Purpose                                |
+| ------------------------ | ---------------------------------------------------------------- | ----------------------- | -------------------------------------- |
+| **Frontend Web App**     | [http://localhost:5173](http://localhost:5173)                   | —                       | Customer Storefront & Admin Portal     |
+| **ASP.NET Core Web API** | [http://localhost:5080](http://localhost:5080)                   | —                       | RESTful API Endpoints                  |
+| **Swagger / OpenAPI**    | [http://localhost:5080/swagger](http://localhost:5080/swagger)   | —                       | Interactive API Documentation          |
+| **Hangfire Dashboard**   | [http://localhost:5080/hangfire](http://localhost:5080/hangfire) | _Admin Only_            | Background Job Orchestration           |
+| **Seq Observability**    | [http://localhost:5341](http://localhost:5341)                   | —                       | Structured Logs & OpenTelemetry Traces |
+| **Mailpit Inbox**        | [http://localhost:8025](http://localhost:8025)                   | —                       | Transactional Email Interceptor        |
+| **PostgreSQL Database**  | `localhost:5432`                                                 | `postgres` / `postgres` | Primary Database (`sportshop`)         |
+| **Redis Cache**          | `localhost:6379`                                                 | —                       | In-Memory Distributed Cache            |
 
 #### Default Seed Data
-- **Administrator**: `admin@sportshop.dev` / `Admin123!`
+
+- **Administrator**: `admin@sportshop.com` / `J3&fP6z@`
 - **Demo Catalog**: Automatically seeds ~30 sports products across categories (Shoes, Jerseys, Rackets, Balls, Accessories) with multiple variants, SKUs, and stock quantities.
 
 ---
@@ -297,27 +303,27 @@ npm run dev
 
 ## Environment Variables Reference
 
-| Variable | Description | Default Dev Value |
-|---|---|---|
-| `POSTGRES_USER` | PostgreSQL superuser username | `postgres` |
-| `POSTGRES_PASSWORD` | PostgreSQL superuser password | `postgres` |
-| `POSTGRES_DB` | Application database name | `sportshop` |
-| `ConnectionStrings__Default` | ADO.NET connection string | `Host=db;Port=5432;Database=sportshop;Username=postgres;Password=postgres;` |
-| `Redis__ConnectionString` | Redis host and port | `redis:6379` |
-| `Jwt__Key` | Secret key for signing HMAC-SHA256 JWTs (&ge; 32 chars) | *(Secure dev string)* |
-| `Jwt__Issuer` | Valid JWT issuer | `SportShopApi` |
-| `Jwt__Audience` | Valid JWT audience | `SportShopClient` |
-| `Midtrans__ServerKey` | Midtrans Sandbox Server Key | `SB-Mid-server-xxxx` |
-| `Midtrans__ClientKey` | Midtrans Sandbox Client Key | `SB-Mid-client-xxxx` |
-| `Midtrans__IsProduction` | Toggle between Sandbox and Production gateway | `false` |
-| `Cors__Origins` | Allowed origins for CORS policy (comma-separated) | `http://localhost:5173,http://localhost:80` |
-| `Seq__ServerUrl` | Seq ingestion endpoint for Serilog | `http://seq:5341` |
-| `Otel__OtlpEndpoint` | OpenTelemetry OTLP collector endpoint | `http://seq:5341/ingest/otlp` |
-| `Smtp__Host` | SMTP server host | `mailpit` |
-| `Smtp__Port` | SMTP port | `1025` |
-| `SEED_ADMIN_EMAIL` | Bootstrap admin account email | `admin@sportshop.dev` |
-| `SEED_ADMIN_PASSWORD` | Bootstrap admin account password | `Admin123!` |
-| `SEED_DEMO_DATA` | Automatically populate demo products on startup | `true` |
+| Variable                     | Description                                             | Default Dev Value                                                           |
+| ---------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `POSTGRES_USER`              | PostgreSQL superuser username                           | `postgres`                                                                  |
+| `POSTGRES_PASSWORD`          | PostgreSQL superuser password                           | `postgres`                                                                  |
+| `POSTGRES_DB`                | Application database name                               | `sportshop`                                                                 |
+| `ConnectionStrings__Default` | ADO.NET connection string                               | `Host=db;Port=5432;Database=sportshop;Username=postgres;Password=postgres;` |
+| `Redis__ConnectionString`    | Redis host and port                                     | `redis:6379`                                                                |
+| `Jwt__Key`                   | Secret key for signing HMAC-SHA256 JWTs (&ge; 32 chars) | _(Secure dev string)_                                                       |
+| `Jwt__Issuer`                | Valid JWT issuer                                        | `SportShopApi`                                                              |
+| `Jwt__Audience`              | Valid JWT audience                                      | `SportShopClient`                                                           |
+| `Midtrans__ServerKey`        | Midtrans Sandbox Server Key                             | `SB-Mid-server-xxxx`                                                        |
+| `Midtrans__ClientKey`        | Midtrans Sandbox Client Key                             | `SB-Mid-client-xxxx`                                                        |
+| `Midtrans__IsProduction`     | Toggle between Sandbox and Production gateway           | `false`                                                                     |
+| `Cors__Origins`              | Allowed origins for CORS policy (comma-separated)       | `http://localhost:5173,http://localhost:80`                                 |
+| `Seq__ServerUrl`             | Seq ingestion endpoint for Serilog                      | `http://seq:5341`                                                           |
+| `Otel__OtlpEndpoint`         | OpenTelemetry OTLP collector endpoint                   | `http://seq:5341/ingest/otlp`                                               |
+| `Smtp__Host`                 | SMTP server host                                        | `mailpit`                                                                   |
+| `Smtp__Port`                 | SMTP port                                               | `1025`                                                                      |
+| `SEED_ADMIN_EMAIL`           | Bootstrap admin account email                           | `admin@sportshop.com`                                                       |
+| `SEED_ADMIN_PASSWORD`        | Bootstrap admin account password                        | `J3&fP6z@`                                                                  |
+| `SEED_DEMO_DATA`             | Automatically populate demo products on startup         | `true`                                                                      |
 
 ---
 
@@ -327,24 +333,25 @@ npm run dev
 
 1. Retrieve your API keys from the [Midtrans Sandbox Dashboard](https://dashboard.sandbox.midtrans.com/) (**Settings** &rarr; **Access Keys**).
 2. Expose your local backend webhook endpoint via Cloudflare Tunnel or ngrok:
-   ```bash
-   # Expose port 5080
-   cloudflared tunnel --url http://localhost:5080
-   # or: ngrok http 5080
-   ```
+    ```bash
+    # Expose port 5080
+    cloudflared tunnel --url http://localhost:5080
+    # or: ngrok http 5080
+    ```
 3. Set the **Payment Notification URL** in Midtrans Settings &rarr; Configuration to:
    `https://<your-tunnel-subdomain>/api/v1/payments/midtrans/notification`
 
 ### 2. Sandbox Payment Simulator
 
 Use the official [Midtrans Simulator](https://simulator.sandbox.midtrans.com/) to complete payments:
+
 - **Virtual Account**: Copy the VA number from the Snap popup into the simulator and submit payment.
 - **QRIS / GoPay**: Scan the generated QR code using the simulator's QR scanner.
 - **Credit Card Test Credentials**:
-  - Card Number: `4811 1111 1111 1114`
-  - Expiry: Any future date (e.g., `12/28`)
-  - CVV: `123`
-  - 3D Secure OTP: `112233`
+    - Card Number: `4811 1111 1111 1114`
+    - Expiry: Any future date (e.g., `12/28`)
+    - CVV: `123`
+    - 3D Secure OTP: `112233`
 
 ---
 
@@ -383,7 +390,8 @@ dotnet test --verbosity normal
 dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
 ```
 
-*Quality Standards Enforced:*
+_Quality Standards Enforced:_
+
 - `SportShop.Domain.Tests`: **100% pass rate** (&ge; 90% code coverage target)
 - `SportShop.Application.Tests`: **100% pass rate** (&ge; 80% code coverage target)
 - `SportShop.Api.IntegrationTests`: **100% pass rate** across all API flows
@@ -413,8 +421,8 @@ SportShop incorporates comprehensive Site Reliability Engineering (SRE) primitiv
 - **Structured Log Enrichment**: Logs emitted via Serilog include `TraceId`, `SpanId`, `CorrelationId`, `UserId`, `ClientIp`, and `OrderNumber`.
 - **Distributed Tracing**: OpenTelemetry traces database queries (EF Core), Redis commands, and outbound HTTP transactions to Midtrans.
 - **Health Probes**:
-  - `GET /health/live`: Liveness probe for orchestrators (Kubernetes/Docker).
-  - `GET /health/ready`: Readiness probe validating PostgreSQL connection pool, Redis ping, and Hangfire worker status.
+    - `GET /health/live`: Liveness probe for orchestrators (Kubernetes/Docker).
+    - `GET /health/ready`: Readiness probe validating PostgreSQL connection pool, Redis ping, and Hangfire worker status.
 - **Background Worker Monitoring**: Hangfire dashboard provides real-time visibility into queue depth, failed jobs, and execution retries.
 
 ---
@@ -445,13 +453,13 @@ GitHub Actions workflows continuously validate and package the repository:
 ## Engineering Guidelines & Contributions
 
 1. **Commit Conventions**: All commits adhere to [Conventional Commits](https://www.conventionalcommits.org/):
-   - `feat(orders): implement stock reservation on checkout`
-   - `fix(auth): prevent refresh token reuse anomaly`
-   - `docs(api): update swagger schemas for shipping quotes`
+    - `feat(orders): implement stock reservation on checkout`
+    - `fix(auth): prevent refresh token reuse anomaly`
+    - `docs(api): update swagger schemas for shipping quotes`
 2. **Pull Request Protocol**:
-   - Ensure all CI checks (Backend, Frontend, Docker, CodeQL) are green.
-   - Accompany bug fixes with a regression test.
-   - Maintain zero compiler warnings (`TreatWarningsAsErrors=true`).
+    - Ensure all CI checks (Backend, Frontend, Docker, CodeQL) are green.
+    - Accompany bug fixes with a regression test.
+    - Maintain zero compiler warnings (`TreatWarningsAsErrors=true`).
 
 ---
 

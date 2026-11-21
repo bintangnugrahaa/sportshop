@@ -54,7 +54,7 @@ public static class AuthTestHelper
     public static string GenerateCustomerToken(Guid? userId = null, string email = "customer@sportshop.dev") =>
         GenerateJwtToken(userId, email, "Customer");
 
-    public static string GenerateAdminToken(Guid? userId = null, string email = "admin@sportshop.dev") =>
+    public static string GenerateAdminToken(Guid? userId = null, string email = "admin@sportshop.com") =>
         GenerateJwtToken(userId, email, "Admin");
 
     public static string GenerateExpiredToken(string role = "Customer") =>

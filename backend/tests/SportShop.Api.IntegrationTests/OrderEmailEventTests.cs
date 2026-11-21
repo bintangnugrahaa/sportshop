@@ -266,7 +266,7 @@ public class OrderEmailEventTests : IClassFixture<CustomWebApplicationFactory>
         }
 
         // Login as admin
-        var adminLoginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.dev", "Admin123!"));
+        var adminLoginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.com", "J3&fP6z@"));
         adminLoginResp.EnsureSuccessStatusCode();
         var adminLoginData = await adminLoginResp.Content.ReadFromJsonAsync<LoginResponse>();
         client.WithBearerToken(adminLoginData!.AccessToken);

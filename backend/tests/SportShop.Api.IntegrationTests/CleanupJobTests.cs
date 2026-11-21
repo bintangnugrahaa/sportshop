@@ -26,7 +26,7 @@ public class CleanupJobTests : IClassFixture<CustomWebApplicationFactory>
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var cleanupJob = scope.ServiceProvider.GetRequiredService<ICleanupJob>();
 
-        var user = await db.Users.FirstAsync(u => u.Email == "admin@sportshop.dev");
+        var user = await db.Users.FirstAsync(u => u.Email == "admin@sportshop.com");
 
         var now = DateTime.UtcNow;
 

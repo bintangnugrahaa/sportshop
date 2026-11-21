@@ -68,7 +68,7 @@ describe('Route Guards', () => {
   it('RequireAdmin renders content for Admin role', () => {
     useAuthStore.setState({
       isAuthenticated: true,
-      user: { id: 'u1', email: 'admin@sportshop.dev', fullName: 'Admin', role: 'Admin' },
+      user: { id: 'u1', email: 'admin@sportshop.com', fullName: 'Admin', role: 'Admin' },
       token: 'valid-jwt',
     });
 

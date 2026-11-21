@@ -66,11 +66,11 @@ public sealed partial class IdentitySeeder : IIdentitySeeder
 
         var adminEmail = _configuration["SEED_ADMIN_EMAIL"]
             ?? _configuration["SeedAdmin:Email"]
-            ?? "admin@sportshop.dev";
+            ?? "admin@sportshop.com";
 
         var adminPassword = _configuration["SEED_ADMIN_PASSWORD"]
             ?? _configuration["SeedAdmin:Password"]
-            ?? "Admin123!";
+            ?? "J3&fP6z@";
 
         var adminFullName = _configuration["SEED_ADMIN_FULLNAME"]
             ?? _configuration["SeedAdmin:FullName"]

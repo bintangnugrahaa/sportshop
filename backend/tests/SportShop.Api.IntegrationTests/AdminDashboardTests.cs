@@ -37,7 +37,7 @@ public class AdminDashboardTests : IClassFixture<CustomWebApplicationFactory>
     private async Task<HttpClient> CreateAdminClientAsync()
     {
         var client = CreateTestClient();
-        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.dev", "Admin123!"));
+        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.com", "J3&fP6z@"));
         loginResp.EnsureSuccessStatusCode();
         var loginData = await loginResp.Content.ReadFromJsonAsync<LoginResponse>();
         client.WithBearerToken(loginData!.AccessToken);
@@ -87,7 +87,7 @@ public class AdminDashboardTests : IClassFixture<CustomWebApplicationFactory>
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var user = await db.Users.FirstAsync(u => u.Email == "admin@sportshop.dev");
+        var user = await db.Users.FirstAsync(u => u.Email == "admin@sportshop.com");
 
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var category = new Category(Guid.NewGuid(), $"CatDash-{suffix}", $"cat-dash-{suffix}");

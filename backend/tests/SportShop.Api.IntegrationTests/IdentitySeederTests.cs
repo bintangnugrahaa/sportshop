@@ -43,7 +43,7 @@ public class IdentitySeederTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         adminUsers.Should().NotBeEmpty();
         var admin = adminUsers.First();
-        admin.Email.Should().Be("admin@sportshop.dev");
+        admin.Email.Should().Be("admin@sportshop.com");
         admin.FullName.Should().Be("Administrator");
         admin.EmailConfirmed.Should().BeTrue();
         admin.IsActive.Should().BeTrue();

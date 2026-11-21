@@ -78,7 +78,7 @@ public class FullUatScenarioTests : IClassFixture<CustomWebApplicationFactory>
     private async Task<HttpClient> CreateAdminClientAsync()
     {
         var client = CreateTestClient();
-        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.dev", "Admin123!"));
+        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.com", "J3&fP6z@"));
         loginResp.EnsureSuccessStatusCode();
         var loginData = await loginResp.Content.ReadFromJsonAsync<LoginResponse>();
         client.WithBearerToken(loginData!.AccessToken);

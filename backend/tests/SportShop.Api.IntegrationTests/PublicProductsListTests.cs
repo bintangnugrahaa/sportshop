@@ -32,7 +32,7 @@ public class PublicProductsListTests : IClassFixture<CustomWebApplicationFactory
 
     private static async Task AuthenticateAsAdminAsync(HttpClient client)
     {
-        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.dev", "Admin123!"));
+        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", new LoginCommand("admin@sportshop.com", "J3&fP6z@"));
         loginResp.EnsureSuccessStatusCode();
         var loginResult = await loginResp.Content.ReadFromJsonAsync<LoginResponse>();
         client.WithBearerToken(loginResult!.AccessToken);
