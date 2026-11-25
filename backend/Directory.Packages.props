@@ -53,7 +53,7 @@
 
     <!-- Health Checks -->
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
-    <PackageVersion Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="8.0.1" />
   </ItemGroup>
 </Project>
